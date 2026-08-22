@@ -14,6 +14,9 @@ import EmployeeDashboard from './pages/employee/Dashboard.jsx';
 import LeaveApply from './pages/employee/LeaveApply.jsx';
 import LeaveHistory from './pages/employee/LeaveHistory.jsx';
 import ApprovalQueue from './pages/admin/ApprovalQueue.jsx';
+import Employees from './pages/admin/Employees.jsx';
+import EmployeeDetail from './pages/admin/EmployeeDetail.jsx';
+import AttendanceBoard from './pages/admin/AttendanceBoard.jsx';
 
 // Stand-in for every page not built yet — Steps 3 and 4 replace these one route at a time.
 function Placeholder({ title }) {
@@ -61,10 +64,10 @@ export default function App() {
               <Route element={<RoleRoute roles={['HR', 'ADMIN']} />}>
                 <Route element={<AdminLayoutWithContext />}>
                   <Route path="/admin" element={<Placeholder title="Admin dashboard" />} />
-                  <Route path="/admin/employees" element={<Placeholder title="Employees" />} />
-                  <Route path="/admin/employees/:id" element={<Placeholder title="Employee detail" />} />
+                  <Route path="/admin/employees" element={<Employees />} />
+                  <Route path="/admin/employees/:id" element={<EmployeeDetail />} />
                   <Route path="/admin/approvals" element={<ApprovalQueue />} />
-                  <Route path="/admin/attendance" element={<Placeholder title="Attendance board" />} />
+                  <Route path="/admin/attendance" element={<AttendanceBoard />} />
                   <Route path="/admin/payroll" element={<Placeholder title="Payroll" />} />
                 </Route>
               </Route>

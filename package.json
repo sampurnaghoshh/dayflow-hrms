@@ -1,0 +1,23 @@
+{
+  "name": "dayflow-hrms",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dayflow HRMS - leave and attendance as immutable event ledgers",
+  "type": "module",
+  "engines": {
+    "node": ">=20.12"
+  },
+  "scripts": {
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d",
+    "migrate": "node db/run-migrations.js",
+    "dev": "node --watch server/src/index.js",
+    "start": "node server/src/index.js",
+    "test": "node --test server/tests/"
+  },
+  "dependencies": {
+    "pg": "^8.13.1",
+    "zod": "^3.24.1"
+  }
+}

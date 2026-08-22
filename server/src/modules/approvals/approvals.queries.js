@@ -90,11 +90,15 @@ export async function lockRequestByStepId(client, { stepId }) {
  */
 export async function lockStep(client, { stepId }) {
   const { rows } = await client.query(
-    `SELECT id AS step_id, request_id, step_no, approver_role, approver_user_id,
-            status AS step_status, comment, acted_at
-     FROM approval_steps
-     WHERE id = $1
-     FOR UPDATE`,
+    `SELECT s.id AS step_id, s.request_id, s.step_no, s.approver_role, s.approver_user_id,
+            s.status AS step_status, s.comment, s.acted_at,
+            e.full_name AS approver_name,
+            u.email     AS approver_email
+     FROM approval_steps s
+     LEFT JOIN users u     ON u.id = s.approver_user_id
+     LEFT JOIN employees e ON e.user_id = u.id
+     WHERE s.id = $1
+     FOR UPDATE OF s`,
     [stepId]
   );
   return rows[0] ?? null;

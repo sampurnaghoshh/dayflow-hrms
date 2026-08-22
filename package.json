@@ -15,7 +15,7 @@
     "seed": "node db/run-seed.js",
     "dev": "node --watch server/src/index.js",
     "start": "node server/src/index.js",
-    "test": "node --test server/tests/"
+    "test": "node --test \"server/tests/**/*.test.js\""
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

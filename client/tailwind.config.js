@@ -1,37 +1,36 @@
-// PROVISIONAL: the color/radius/font/shadow var names below are placeholders that mirror
-// client/src/theme/tokens.css (also a placeholder — see the comment at the top of that file).
-// Once the design pair pastes the real tokens.css, update the `var(--...)` names here to match
-// theirs exactly. Utility classes (bg-primary, text-danger, rounded-lg, ...) must never change —
-// only the variable name each one points to.
+// Points Tailwind's token-backed utility classes at the design pair's tokens.css
+// (client/src/theme/tokens.css — owned by them, never edited here; see CLAUDE.md §3, §9).
+// Utility class names (bg-primary, text-text-muted, rounded-lg, shadow-sm, ...) must stay
+// stable across any future re-theme — only the `var(--...)` each one points to should change.
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
       colors: {
-        bg: 'var(--color-bg)',
-        surface: 'var(--color-surface)',
-        'surface-alt': 'var(--color-surface-alt)',
-        border: 'var(--color-border)',
+        bg: 'var(--surface-page)',
+        surface: 'var(--surface-card)',
+        'surface-alt': 'var(--surface-sunken)',
+        border: 'var(--border-hairline)',
         text: {
-          DEFAULT: 'var(--color-text)',
-          muted: 'var(--color-text-muted)',
-          inverse: 'var(--color-text-inverse)',
+          DEFAULT: 'var(--ink-body)',
+          muted: 'var(--ink-muted)',
+          inverse: 'var(--ink-invert)',
         },
         primary: {
-          DEFAULT: 'var(--color-primary)',
-          hover: 'var(--color-primary-hover)',
-          text: 'var(--color-primary-text)',
+          DEFAULT: 'var(--pine-500)',
+          hover: 'var(--pine-700)',
+          text: 'var(--ink-invert)',
         },
         secondary: {
-          DEFAULT: 'var(--color-secondary)',
-          hover: 'var(--color-secondary-hover)',
+          DEFAULT: 'var(--ink-muted)',
+          hover: 'var(--ink-body)',
         },
-        success: { DEFAULT: 'var(--color-success)', bg: 'var(--color-success-bg)' },
-        warning: { DEFAULT: 'var(--color-warning)', bg: 'var(--color-warning-bg)' },
-        danger: { DEFAULT: 'var(--color-danger)', bg: 'var(--color-danger-bg)' },
-        info: { DEFAULT: 'var(--color-info)', bg: 'var(--color-info-bg)' },
-        focus: 'var(--color-focus-ring)',
+        success: { DEFAULT: 'var(--pine-700)', bg: 'var(--pine-100)' },
+        warning: { DEFAULT: 'var(--amber-600)', bg: 'var(--amber-100)' },
+        danger: { DEFAULT: 'var(--danger-500)', bg: 'var(--danger-100)' },
+        info: { DEFAULT: 'var(--info-500)', bg: 'var(--info-100)' },
+        focus: 'var(--pine-500)',
       },
       borderRadius: {
         sm: 'var(--radius-sm)',
@@ -41,19 +40,20 @@ export default {
         full: 'var(--radius-full)',
       },
       fontFamily: {
-        sans: 'var(--font-sans)',
+        sans: 'var(--font-body)',
+        display: 'var(--font-display)',
       },
       fontSize: {
-        xs: 'var(--font-size-xs)',
-        sm: 'var(--font-size-sm)',
-        base: 'var(--font-size-base)',
-        lg: 'var(--font-size-lg)',
-        xl: 'var(--font-size-xl)',
-        '2xl': 'var(--font-size-2xl)',
+        xs: 'var(--text-xs)',
+        sm: 'var(--text-sm)',
+        base: 'var(--text-base)',
+        lg: 'var(--text-lg)',
+        xl: 'var(--text-xl)',
+        '2xl': 'var(--text-2xl)',
       },
       boxShadow: {
-        sm: 'var(--shadow-sm)',
-        md: 'var(--shadow-md)',
+        sm: 'var(--shadow-card)',
+        md: 'var(--shadow-modal)',
       },
     },
   },

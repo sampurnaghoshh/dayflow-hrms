@@ -11,6 +11,7 @@ import SignUp from './pages/auth/SignUp.jsx';
 import VerifyEmail from './pages/auth/VerifyEmail.jsx';
 import EmployeeDashboard from './pages/employee/Dashboard.jsx';
 import LeaveApply from './pages/employee/LeaveApply.jsx';
+import LeaveHistory from './pages/employee/LeaveHistory.jsx';
 
 // Stand-in for every page not built yet — Steps 3 and 4 replace these one route at a time.
 function Placeholder({ title }) {
@@ -49,7 +50,7 @@ export default function App() {
                 <Route path="/profile" element={<Placeholder title="Profile" />} />
                 <Route path="/attendance" element={<Placeholder title="Attendance" />} />
                 <Route path="/leave/apply" element={<LeaveApply />} />
-                <Route path="/leave/history" element={<Placeholder title="Leave history" />} />
+                <Route path="/leave/history" element={<LeaveHistory />} />
                 <Route path="/payslips" element={<Placeholder title="Payslips" />} />
               </Route>
             </Route>

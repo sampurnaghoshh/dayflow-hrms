@@ -12,10 +12,13 @@ function daysAgo(n) {
   return d;
 }
 
+// Matches db/seed/01_reference.sql exactly, EXCEPT department 4 — see the note on 'DES'
+// below; the seed file on disk still has ('SLS', 'Sales') there, not ('DES', 'Design').
 export const departments = [
   { id: 1, code: 'ENG', name: 'Engineering' },
-  { id: 2, code: 'PEO', name: 'People Ops' },
-  { id: 3, code: 'SAL', name: 'Sales' },
+  { id: 2, code: 'PPL', name: 'People Operations' },
+  { id: 3, code: 'FIN', name: 'Finance' },
+  { id: 4, code: 'DES', name: 'Design' }, // per this session's instruction — NOT yet in the seed file (still 'SLS'/'Sales')
 ];
 
 // Mock-only credential map. Never modeled on the real auth flow (no JWT, no hashing) —
@@ -41,15 +44,15 @@ export const employees = [
   {
     id: 2, userId: 2, employeeCode: 'DF-1002', fullName: 'Marcus Lee',
     email: 'marcus.lee@dayflow.io', role: 'EMPLOYEE', status: 'ACTIVE',
-    departmentId: 3, departmentName: 'Sales', managerId: 5, managerName: 'Priya Nair',
-    designation: 'Account Executive', dateOfJoining: '2022-07-01',
+    departmentId: 4, departmentName: 'Design', managerId: null, managerName: null,
+    designation: 'Product Designer', dateOfJoining: '2022-07-01',
     phone: '+1 415 555 0177', address: '88 Mission St, San Francisco, CA',
     profilePhotoPath: null, emailVerifiedAt: '2022-07-01T09:00:00Z', lastLoginAt: null,
   },
   {
     id: 3, userId: 3, employeeCode: 'DF-1003', fullName: 'Sofia Garcia',
     email: 'sofia.garcia@dayflow.io', role: 'HR', status: 'ACTIVE',
-    departmentId: 2, departmentName: 'People Ops', managerId: null, managerName: null,
+    departmentId: 2, departmentName: 'People Operations', managerId: null, managerName: null,
     designation: 'HR Business Partner', dateOfJoining: '2021-01-11',
     phone: '+1 415 555 0199', address: '500 Howard St, San Francisco, CA',
     profilePhotoPath: null, emailVerifiedAt: '2021-01-11T09:00:00Z', lastLoginAt: null,
@@ -65,8 +68,8 @@ export const employees = [
   {
     id: 5, userId: 5, employeeCode: 'DF-1005', fullName: 'Priya Nair',
     email: 'priya.nair@dayflow.io', role: 'HR', status: 'ACTIVE',
-    departmentId: 3, departmentName: 'Sales', managerId: null, managerName: null,
-    designation: 'Sales Manager', dateOfJoining: '2021-09-02',
+    departmentId: 3, departmentName: 'Finance', managerId: null, managerName: null,
+    designation: 'Finance Manager', dateOfJoining: '2021-09-02',
     phone: '+1 415 555 0155', address: '45 2nd St, San Francisco, CA',
     profilePhotoPath: null, emailVerifiedAt: '2021-09-02T09:00:00Z', lastLoginAt: null,
   },
@@ -185,8 +188,8 @@ export const attendanceDays = [
 
 export const todayPresence = [
   { employeeId: 1, employeeName: 'Ava Thompson', departmentName: 'Engineering', status: 'PRESENT', firstIn: `${isoDate(daysAgo(0))}T09:02:00Z`, lastOut: null },
-  { employeeId: 2, employeeName: 'Marcus Lee', departmentName: 'Sales', status: 'PRESENT', firstIn: `${isoDate(daysAgo(0))}T08:47:00Z`, lastOut: null },
-  { employeeId: 3, employeeName: 'Sofia Garcia', departmentName: 'People Ops', status: 'ON_LEAVE', firstIn: null, lastOut: null },
+  { employeeId: 2, employeeName: 'Marcus Lee', departmentName: 'Design', status: 'PRESENT', firstIn: `${isoDate(daysAgo(0))}T08:47:00Z`, lastOut: null },
+  { employeeId: 3, employeeName: 'Sofia Garcia', departmentName: 'People Operations', status: 'ON_LEAVE', firstIn: null, lastOut: null },
   { employeeId: 6, employeeName: 'Noah Kim', departmentName: 'Engineering', status: 'ABSENT', firstIn: null, lastOut: null },
 ];
 

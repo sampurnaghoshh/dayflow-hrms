@@ -9,6 +9,8 @@ import ComponentKit from './pages/dev/ComponentKit.jsx';
 import SignIn from './pages/auth/SignIn.jsx';
 import SignUp from './pages/auth/SignUp.jsx';
 import VerifyEmail from './pages/auth/VerifyEmail.jsx';
+import EmployeeDashboard from './pages/employee/Dashboard.jsx';
+import LeaveApply from './pages/employee/LeaveApply.jsx';
 
 // Stand-in for every page not built yet — Steps 3 and 4 replace these one route at a time.
 function Placeholder({ title }) {
@@ -43,10 +45,10 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<RoleRoute roles={['EMPLOYEE', 'HR', 'ADMIN']} />}>
               <Route element={<EmployeeLayout />}>
-                <Route path="/" element={<Placeholder title="Dashboard" />} />
+                <Route path="/" element={<EmployeeDashboard />} />
                 <Route path="/profile" element={<Placeholder title="Profile" />} />
                 <Route path="/attendance" element={<Placeholder title="Attendance" />} />
-                <Route path="/leave/apply" element={<Placeholder title="Apply for leave" />} />
+                <Route path="/leave/apply" element={<LeaveApply />} />
                 <Route path="/leave/history" element={<Placeholder title="Leave history" />} />
                 <Route path="/payslips" element={<Placeholder title="Payslips" />} />
               </Route>

@@ -5,6 +5,7 @@ import Table from '../../components/Table.jsx';
 import Button from '../../components/Button.jsx';
 import Skeleton from '../../components/Skeleton.jsx';
 import EmptyState from '../../components/EmptyState.jsx';
+import { useToast } from '../../components/Toast.jsx';
 import PayslipDetail from './PayslipDetail.jsx';
 
 function formatMonth(periodMonth) {
@@ -12,6 +13,7 @@ function formatMonth(periodMonth) {
 }
 
 export default function Payslips() {
+  const { showToast } = useToast();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(null);
@@ -23,10 +25,15 @@ export default function Payslips() {
     let cancelled = false;
     api.get('/payroll/me')
       .then((res) => { if (!cancelled) setData(res); })
-      .catch(() => { if (!cancelled) setData({ current: null, history: [], payslips: [] }); })
+      .catch((err) => {
+        if (!cancelled) {
+          setData({ current: null, history: [], payslips: [] });
+          showToast(err.message || 'Could not load your payslips.', 'danger');
+        }
+      })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, []);
+  }, [showToast]);
 
   function loadDetail(id) {
     setDetailLoading(true);

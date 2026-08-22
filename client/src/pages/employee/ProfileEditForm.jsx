@@ -34,7 +34,7 @@ export default function ProfileEditForm({ employee, canEditAll, onSaved }) {
     setSubmitting(true);
     try {
       const updated = await api.patch(`/employees/${employee.id}`, body);
-      setSuccess('Profile updated.');
+      setSuccess('Changes saved.');
       onSaved(updated);
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.');

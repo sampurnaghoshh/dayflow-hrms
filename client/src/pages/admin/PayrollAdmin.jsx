@@ -25,9 +25,9 @@ export default function PayrollAdmin() {
     setLoading(true);
     api.get(`/payroll/employees/${employeeId}`)
       .then(setData)
-      .catch(() => setData(null))
+      .catch((err) => { setData(null); showToast(err.message || 'Could not load this salary structure.', 'danger'); })
       .finally(() => setLoading(false));
-  }, [employeeId]);
+  }, [employeeId, showToast]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -70,7 +70,7 @@ export default function PayrollAdmin() {
           onSaved={(result) => {
             setData(result);
             setShowForm(false);
-            showToast('Salary structure updated.', 'success');
+            showToast('Structure saved.', 'success');
           }}
         />
       )}

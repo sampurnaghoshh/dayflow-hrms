@@ -3,9 +3,18 @@ import { api } from '../../api/client.js';
 import Table from '../../components/Table.jsx';
 import Badge from '../../components/Badge.jsx';
 import Skeleton from '../../components/Skeleton.jsx';
+import { useToast } from '../../components/Toast.jsx';
 import { useAdminEmployee } from '../../context/AdminEmployeeContext.jsx';
 import { useStreamEvent } from '../../context/useStreamEvent.js';
 
+// Local calendar date, not UTC — .toISOString().slice(0, 10) shifts a day backward in any
+// timezone ahead of UTC (docs/api-shapes.md's warning; same bug fixed in api/fixtures.js).
+function isoDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 function mondayOf(date) {
   const d = new Date(date);
   const day = d.getDay(); // 0 = Sunday
@@ -16,13 +25,14 @@ function weekDates(monday) {
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
-    return d.toISOString().slice(0, 10);
+    return isoDate(d);
   });
 }
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export default function AttendanceBoard() {
   const { employeeId } = useAdminEmployee();
+  const { showToast } = useToast();
   const [today, setToday] = useState([]);
   const [todayLoading, setTodayLoading] = useState(true);
   const [roster, setRoster] = useState([]);
@@ -35,9 +45,9 @@ export default function AttendanceBoard() {
     setTodayLoading(true);
     return api.get('/attendance/today')
       .then((res) => setToday(res?.data ?? []))
-      .catch(() => setToday([]))
+      .catch((err) => { setToday([]); showToast(err.message || "Could not load today's presence.", 'danger'); })
       .finally(() => setTodayLoading(false));
-  }, []);
+  }, [showToast]);
 
   useEffect(() => { loadToday(); }, [loadToday]);
 
@@ -57,10 +67,12 @@ export default function AttendanceBoard() {
         setRoster(employeesRes?.data ?? []);
         setAttendance(attendanceRes?.data ?? []);
       })
-      .catch(() => { if (!cancelled) { setRoster([]); setAttendance([]); } })
+      .catch((err) => {
+        if (!cancelled) { setRoster([]); setAttendance([]); showToast(err.message || "Could not load this week's attendance.", 'danger'); }
+      })
       .finally(() => { if (!cancelled) setWeekLoading(false); });
     return () => { cancelled = true; };
-  }, [dates, employeeId]);
+  }, [dates, employeeId, showToast]);
 
   const visibleToday = employeeId ? today.filter((r) => r.employeeId === employeeId) : today;
   const visibleRoster = employeeId ? roster.filter((e) => e.id === employeeId) : roster;

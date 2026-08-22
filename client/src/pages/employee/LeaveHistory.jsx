@@ -6,6 +6,7 @@ import Table from '../../components/Table.jsx';
 import Badge from '../../components/Badge.jsx';
 import Button from '../../components/Button.jsx';
 import Skeleton from '../../components/Skeleton.jsx';
+import { useToast } from '../../components/Toast.jsx';
 import { useStreamEvent } from '../../context/useStreamEvent.js';
 import LeaveRequestDetail from './LeaveRequestDetail.jsx';
 
@@ -14,6 +15,7 @@ import LeaveRequestDetail from './LeaveRequestDetail.jsx';
 // row now fetches GET /leave/requests/:id, which returns { request, timeline }.
 export default function LeaveHistory() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [requests, setRequests] = useState([]);
   const [requestsLoading, setRequestsLoading] = useState(true);
   const [balances, setBalances] = useState([]);
@@ -29,17 +31,17 @@ export default function LeaveHistory() {
     setRequestsLoading(true);
     return api.get('/leave/requests')
       .then((res) => setRequests(res?.data ?? []))
-      .catch(() => setRequests([]))
+      .catch((err) => { setRequests([]); showToast(err.message || 'Could not load your leave requests.', 'danger'); })
       .finally(() => setRequestsLoading(false));
-  }, []);
+  }, [showToast]);
 
   const loadBalances = useCallback(() => {
     setBalancesLoading(true);
     return api.get('/leave/balances')
       .then((res) => setBalances(res?.balances ?? []))
-      .catch(() => setBalances([]))
+      .catch((err) => { setBalances([]); showToast(err.message || 'Could not load your leave balance.', 'danger'); })
       .finally(() => setBalancesLoading(false));
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     loadRequests();
@@ -87,6 +89,7 @@ export default function LeaveHistory() {
       await api.post(`/leave/requests/${id}/cancel`);
       await Promise.all([loadRequests(), loadBalances()]);
       loadDetail(id);
+      showToast('Cancelled.', 'success');
     } catch (err) {
       setCancelError(err.message || 'Something went wrong. Please try again.');
     } finally {

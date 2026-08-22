@@ -34,9 +34,9 @@ export default function ApprovalQueue() {
     setLoading(true);
     return api.get('/approvals/queue', { leaveCode: typeFilter || undefined })
       .then((res) => setQueue(res?.data ?? []))
-      .catch(() => setQueue([]))
+      .catch((err) => { setQueue([]); showToast(err.message || 'Could not load the approval queue.', 'danger'); })
       .finally(() => setLoading(false));
-  }, [typeFilter]);
+  }, [typeFilter, showToast]);
 
   useEffect(() => { loadQueue(); }, [loadQueue]);
 

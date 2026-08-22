@@ -5,11 +5,13 @@ import Table from '../../components/Table.jsx';
 import FormField from '../../components/FormField.jsx';
 import Button from '../../components/Button.jsx';
 import Badge from '../../components/Badge.jsx';
+import { useToast } from '../../components/Toast.jsx';
 import { prettyStatus } from '../../lib/statusLabels.js';
 
 const PAGE_SIZE = 10;
 
 export default function Employees() {
+  const { showToast } = useToast();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -25,10 +27,12 @@ export default function Employees() {
         setRows(res?.data ?? []);
         setTotal(res?.total ?? 0);
       })
-      .catch(() => { if (!cancelled) { setRows([]); setTotal(0); } })
+      .catch((err) => {
+        if (!cancelled) { setRows([]); setTotal(0); showToast(err.message || 'Could not load employees.', 'danger'); }
+      })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [search, page]);
+  }, [search, page, showToast]);
 
   function handleSearchChange(value) {
     setSearch(value);

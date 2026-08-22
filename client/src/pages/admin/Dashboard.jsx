@@ -33,9 +33,17 @@ export default function AdminDashboard() {
   }, []);
 
   if (loading) {
+    // Shaped like the loaded layout below (4 stat cards + 2 chart cards) so nothing new
+    // pops into existence when the real content swaps in — only the skeletons resolve.
     return (
-      <div className="grid grid-cols-1 gap-4 p-6 sm:grid-cols-2 lg:grid-cols-4">
-        {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-24 w-full" />)}
+      <div className="flex flex-col gap-8 p-6">
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-24 w-full" />)}
+        </section>
+        <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <Skeleton className="h-64 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </section>
       </div>
     );
   }
@@ -65,44 +73,56 @@ export default function AdminDashboard() {
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <h2 className="mb-4 text-sm font-semibold text-text">Attendance rate by department</h2>
-          {attendanceByDepartment.length === 0 ? (
-            <EmptyState icon="📈" title="No attendance data yet" />
-          ) : (
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={attendanceByDepartment} margin={{ top: 20, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="var(--border-hairline)" />
-                <XAxis dataKey="name" tick={AXIS_TICK} axisLine={{ stroke: 'var(--border-hairline)' }} tickLine={false} />
-                <YAxis domain={[0, 100]} tick={AXIS_TICK} axisLine={false} tickLine={false} width={32} />
-                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [`${value}%`, 'Attendance']} />
-                <Bar dataKey="attendancePct" fill="var(--pine-500)" radius={[4, 4, 0, 0]} maxBarSize={40}>
-                  <LabelList dataKey="attendancePct" position="top" formatter={(v) => `${v}%`} fill="var(--ink-body)" fontSize={12} />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          )}
+          {/* Fixed height on all three states (empty/chart, and the loading skeleton above)
+              so this card never resizes when the data arrives. */}
+          <div className="h-64">
+            {attendanceByDepartment.length === 0 ? (
+              <EmptyState
+                icon="📈" title="No attendance data yet"
+                description="Check back once today's attendance is recorded." className="h-full"
+              />
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={attendanceByDepartment} margin={{ top: 20, right: 8, left: 0, bottom: 0 }}>
+                  <CartesianGrid vertical={false} stroke="var(--border-hairline)" />
+                  <XAxis dataKey="name" tick={AXIS_TICK} axisLine={{ stroke: 'var(--border-hairline)' }} tickLine={false} />
+                  <YAxis domain={[0, 100]} tick={AXIS_TICK} axisLine={false} tickLine={false} width={32} />
+                  <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [`${value}%`, 'Attendance']} />
+                  <Bar dataKey="attendancePct" fill="var(--pine-500)" radius={[4, 4, 0, 0]} maxBarSize={40}>
+                    <LabelList dataKey="attendancePct" position="top" formatter={(v) => `${v}%`} fill="var(--ink-body)" fontSize={12} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
         </Card>
 
         <Card>
           <h2 className="mb-4 text-sm font-semibold text-text">Leave requests by status</h2>
-          {!hasLeaveData ? (
-            <EmptyState icon="🌴" title="No leave requests yet" />
-          ) : (
-            <ResponsiveContainer width="100%" height={260}>
-              <PieChart>
-                <Pie
-                  data={leaveStatusBreakdown} dataKey="count" nameKey="status"
-                  cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2}
-                  label={({ count }) => (count > 0 ? count : '')}
-                >
-                  {leaveStatusBreakdown.map((entry) => (
-                    <Cell key={entry.status} fill={STATUS_COLORS[entry.status]} stroke="var(--surface-card)" strokeWidth={2} />
-                  ))}
-                </Pie>
-                <Legend formatter={(value) => STATUS_LABELS[value] ?? value} wrapperStyle={{ fontSize: 12, color: 'var(--ink-muted)' }} />
-                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value, name) => [value, STATUS_LABELS[name] ?? name]} />
-              </PieChart>
-            </ResponsiveContainer>
-          )}
+          <div className="h-64">
+            {!hasLeaveData ? (
+              <EmptyState
+                icon="🌴" title="No leave requests yet"
+                description="Requests will break down by status here once someone applies." className="h-full"
+              />
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={leaveStatusBreakdown} dataKey="count" nameKey="status"
+                    cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2}
+                    label={({ count }) => (count > 0 ? count : '')}
+                  >
+                    {leaveStatusBreakdown.map((entry) => (
+                      <Cell key={entry.status} fill={STATUS_COLORS[entry.status]} stroke="var(--surface-card)" strokeWidth={2} />
+                    ))}
+                  </Pie>
+                  <Legend formatter={(value) => STATUS_LABELS[value] ?? value} wrapperStyle={{ fontSize: 12, color: 'var(--ink-muted)' }} />
+                  <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value, name) => [value, STATUS_LABELS[name] ?? name]} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
         </Card>
       </section>
     </div>

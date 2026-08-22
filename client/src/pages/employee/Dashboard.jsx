@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../../api/client.js';
 import Card from '../../components/Card.jsx';
 import Table from '../../components/Table.jsx';
+import { useToast } from '../../components/Toast.jsx';
 import RecentActivity from './RecentActivity.jsx';
 
 const QUICK_LINKS = [
@@ -18,6 +19,7 @@ const BALANCE_COLUMNS = [
 ];
 
 export default function Dashboard() {
+  const { showToast } = useToast();
   const [balances, setBalances] = useState([]);
   const [balancesLoading, setBalancesLoading] = useState(true);
   const [activity, setActivity] = useState([]);
@@ -30,20 +32,20 @@ export default function Dashboard() {
       .get('/leave/balances')
       // { employeeId, balances: [...] }, not { data: [...] } (docs/api-shapes.md).
       .then((res) => { if (!cancelled) setBalances(res?.balances ?? []); })
-      .catch(() => { if (!cancelled) setBalances([]); })
+      .catch((err) => { if (!cancelled) { setBalances([]); showToast(err.message || 'Could not load your leave balance.', 'danger'); } })
       .finally(() => { if (!cancelled) setBalancesLoading(false); });
     return () => { cancelled = true; };
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     let cancelled = false;
     api
       .get('/dashboard/employee')
       .then((res) => { if (!cancelled) setActivity(res?.recentActivity ?? []); })
-      .catch(() => { if (!cancelled) setActivity([]); })
+      .catch((err) => { if (!cancelled) { setActivity([]); showToast(err.message || 'Could not load recent activity.', 'danger'); } })
       .finally(() => { if (!cancelled) setActivityLoading(false); });
     return () => { cancelled = true; };
-  }, []);
+  }, [showToast]);
 
   return (
     <div className="flex flex-col gap-8 p-6">

@@ -2,8 +2,15 @@
 // endpoints in CLAUDE.md §6 are expected to return. Nothing here is persisted — mocks.js
 // clones this on load and mutates the clone in memory for the life of the tab.
 
+// Local calendar date, not UTC — d.toISOString().slice(0, 10) shifts a day backward in any
+// timezone ahead of UTC (the exact pitfall docs/api-shapes.md warns about: "do not run a
+// calendar day through new Date() and reformat it"). daysAgo() below already builds `d` at
+// local midnight, so reading it back with local getters keeps the two in agreement.
 function isoDate(d) {
-  return d.toISOString().slice(0, 10);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 function daysAgo(n) {
   const d = new Date();
@@ -126,7 +133,10 @@ export const leaveRequests = [
   },
   {
     id: 103, employeeId: 1, employeeName: 'Ava Thompson', leaveTypeId: 1, leaveCode: 'PAID',
-    startDate: isoDate(daysAgo(-10)), endDate: isoDate(daysAgo(-8)), dayCount: 3, remarks: 'Conference',
+    // daysAgo(-N) counts forward from today, so the larger N is the later date — -8 must be
+    // the start and -10 the end, not the other way round (that inversion was the reported
+    // bug). dayCount is 2, not 3: the range includes a weekend day, which doesn't count.
+    startDate: isoDate(daysAgo(-8)), endDate: isoDate(daysAgo(-10)), dayCount: 2, remarks: 'Conference',
     status: 'PENDING', currentStep: 1, createdAt: new Date().toISOString(), decidedAt: null,
     steps: [
       { id: 1004, stepNo: 1, approverRole: 'HR', approverName: null, status: 'PENDING', comment: null, actedAt: null },

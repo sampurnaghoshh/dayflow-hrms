@@ -116,7 +116,7 @@ export default function LeaveApply() {
             </select>
           </FormField>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <FormField id="leave-start" label="Start date" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
             <FormField id="leave-end" label="End date" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
           </div>

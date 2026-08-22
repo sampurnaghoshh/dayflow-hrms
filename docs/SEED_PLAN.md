@@ -26,8 +26,10 @@ Each employee should have:
 - Date of joining
 - Employment status
 - Annual CTC
-- Leave balance
+- Leave balances must not be stored as employee attributes. Seed opening ledger rows instead; the employee's balance is computed from the sum of ledger entries.
 - Reporting manager / approver where applicable
+
+  The seeded users must include at least one HR account and at least two ADMIN accounts. This is required for the two-step HR → ADMIN approval chain and ensures that two different authorised users can complete separate approval steps when required.
 
 ## 2. Attendance History
 
@@ -39,8 +41,8 @@ Attendance data should include a realistic mix of:
 - Absent
 - Half-day
 - On leave
-- Holidays
-- Weekends
+
+Holiday and weekend statuses should not be seeded directly. Seed the required punches and calendar data; deriveDay() should derive holiday and weekend statuses from the calendar.
 
 Include check-in and check-out times where applicable.
 
@@ -67,6 +69,9 @@ The seeded leave data should exercise:
 - Leave ledger entries
 - Attendance integration
 
+When generating leave requests, avoid overlapping live requests for the same employee. PENDING and APPROVED requests must not overlap because the database constraint blocks overlapping live leave. REJECTED and CANCELLED requests may overlap because they are not considered live.
+
+
 ## 4. Holidays
 
 Seed 8 real Indian public holidays for 2026.
@@ -79,6 +84,9 @@ Holiday data should include:
 
 These holidays should be considered non-working days when calculating leave and attendance.
 
+At least one seeded leave request must span Republic Day (26 January 2026) so the demo visibly proves that a weekday public holiday is excluded from leave-day calculations.
+
+
 ## 5. Salary Revisions
 
 Create at least 3 salary revision records across different employees.
@@ -86,10 +94,10 @@ Create at least 3 salary revision records across different employees.
 Each revision should contain:
 
 - Employee
-- Previous salary / CTC
-- Revised salary / CTC
-- Effective date
-- Revision history
+- ctc_annual `- `effective_from
+- effective_to``
+- Previous salary is represented by the previous version row, not by a separate "previous salary" field.
+- When a revision is seeded, close the old salary version and create the new version in the same transaction so version history is preserved and active date ranges do not overlap.
 
 Historical revisions must remain available after the new salary becomes effective.
 
@@ -99,14 +107,17 @@ Create one employee specifically for the insufficient-leave-balance demo.
 
 Requirements:
 
-- Current leave balance: **1.5 days**
+- Seed PAID leave ledger entries whose current sum is **1.50 days**.
 - Demo leave request: **3 days**
 
 This employee should be used to demonstrate the insufficient balance validation flow.
 
 Expected error:
 
-> You have 1.5 paid leave days available but requested 3.
+> You have 1.50 paid leave days available but requested 3.
+The 1.50-day balance must come from ledger entries, not a stored balance field. Seed accrual/opening rows so the ledger sum produces exactly 1.50 at demo time.
+
+The demo employee may still have six months of attendance history. Do not derive the 1.50-day demo balance solely from six months of automatic accrual; construct the opening/accrual ledger history so that the current PAID ledger sum is exactly 1.50 days at demo time.
 
 ## 7. Demo Data Coverage
 

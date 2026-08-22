@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.jsx';
 import { api } from '../api/client.js';
 import { useAdminEmployee } from '../context/AdminEmployeeContext.jsx';
@@ -61,6 +61,12 @@ export default function AdminLayout() {
           <div className="text-sm text-text-muted">{user?.fullName} · {user?.role}</div>
           <div className="flex flex-wrap items-center gap-3">
             <EmployeeSwitcher />
+            <Link
+              to="/"
+              className="rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text hover:bg-surface-alt"
+            >
+              My workspace
+            </Link>
             <button type="button" aria-label="Notifications" className="rounded-full p-2 text-text hover:bg-surface-alt">
               🔔
             </button>

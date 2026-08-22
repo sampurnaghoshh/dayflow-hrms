@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.jsx';
 import { employeeNavItems } from './navConfig.js';
 
@@ -25,6 +25,14 @@ export default function EmployeeLayout() {
         <header className="flex items-center justify-between border-b border-border bg-surface px-4 py-3">
           <div className="text-sm text-text-muted">Welcome back, {user?.fullName ?? user?.employeeCode}</div>
           <div className="flex items-center gap-3">
+            {(user?.role === 'HR' || user?.role === 'ADMIN') && (
+              <Link
+                to="/admin"
+                className="rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text hover:bg-surface-alt"
+              >
+                Admin
+              </Link>
+            )}
             <button type="button" aria-label="Notifications" className="rounded-full p-2 text-text hover:bg-surface-alt">
               🔔
             </button>

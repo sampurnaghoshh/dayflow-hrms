@@ -29,6 +29,28 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(4000),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   UPLOAD_DIR: z.string().min(1).default('./server/uploads'),
+  /*
+   * The timezone the business day is measured in.
+   *
+   * Punches are TIMESTAMPTZ (instants); attendance_days.work_date is a DATE (a calendar
+   * day). Turning one into the other needs a zone, and it cannot be the server's:
+   * postgres runs UTC here while the app host is IST, so a punch at 01:00 local is
+   * 19:30 UTC the previous day and would be filed against the wrong business day.
+   * Every punch-to-day mapping goes through this value.
+   */
+  APP_TIMEZONE: z
+    .string()
+    .min(1)
+    .default('Asia/Kolkata')
+    .refine((tz) => {
+      try {
+        new Intl.DateTimeFormat('en-US', { timeZone: tz });
+        return true;
+      } catch {
+        return false;
+      }
+    }, 'must be a valid IANA timezone, e.g. Asia/Kolkata'),
+
   // The single browser origin allowed to send credentialed requests (§8).
   // Never a wildcard: '*' is illegal with credentials:true and would defeat SameSite.
   CLIENT_ORIGIN: z

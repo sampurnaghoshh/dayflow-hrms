@@ -29,7 +29,7 @@
 |---|---|---|
 | ⬜ | Employee opens `/admin/employees` directly by URL | Redirected, not rendered |
 | ⬜ | Employee calls `GET /api/employees` via curl with their own cookie | 403 |
-| ⬜ | Employee calls `GET /api/employees/7` (not theirs) | 404, not 403 |
+| ⬜ | Employee calls GET /api/employees/7 (not theirs) | 404 — ownership failure must not reveal whether the employee exists |
 | ⬜ | Employee calls `POST /api/approvals/steps/1/decide` | 403 |
 | ⬜ | Employee PATCHes their own `designation` or `ctc_annual` | Field ignored or 403 — never silently saved |
 | ⬜ | Any API call with no cookie | 401 |
@@ -54,6 +54,7 @@
 - [ ] The second approver receives the "already approved" message.
 - [ ] Exactly one `CONSUMED` row exists in the ledger.
 - [ ] No duplicate balance deduction occurs.
+- [ ] > Review note: The expected "Priya already approved this request." message requires the API to return who already decided the request. Confirm this API support before the demo.
 
 ## 4. Data Integrity
 
@@ -63,7 +64,7 @@
 | ⬜ | Cancel the approved leave | Balance returns and both original + reversal rows remain |
 | ⬜ | Reject a leave | Zero ledger rows are written |
 | ⬜ | Run payroll twice for the same month | Only one payslip is created |
-| ⬜ | Hit "Recompute attendance" | No data changes; operation is idempotent |
+| ⬜ | Hit "Recompute attendance" | Status and worked_minutes remain unchanged; computed_at may update |
 
 ## 5. Polish Sweep
 
@@ -79,7 +80,7 @@
 ## QA Results
 
 **QA Lead:** Dev D  
-**QA Start:** 15:00  
+**QA Start:** Before 15:00 for full sweep; 15:00 for final verification  
 **Feature Freeze:** 15:30
 
 ### Bugs Found

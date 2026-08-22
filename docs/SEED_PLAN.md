@@ -16,6 +16,17 @@ Create 12 employees distributed across the four departments.
 | Design | 2 |
 | **Total** | **12** |
 
+### Role Distribution
+
+| Role | Number |
+|---|---:|
+| Admin | 1 |
+| HR | 2 |
+| Employee | 9 |
+| **Total** | **12** |
+
+The seeded employee hierarchy should include one Admin, two HR users, and nine regular employees, with reporting-manager relationships populated where applicable.
+
 Each employee should have:
 
 - Employee code
@@ -50,9 +61,35 @@ Include check-in and check-out times where applicable.
 
 The attendance history should provide enough data for monthly attendance summaries and payroll calculations.
 
+### Attendance Pattern Requirements
+
+The six-month attendance history must include:
+
+- A few employees with recurring late arrivals.
+- Two employees with a repeated Monday-absence pattern so the attendance anomaly KPI has meaningful data to identify.
+- A scattering of half-day attendance records.
+- Full or near-full attendance for most employees.
+- Check-in and check-out punches where applicable.
+
 ## 3. Leave Requests
 
 Create approximately 25 leave requests across the 12 employees.
+
+### Leave Request Distribution
+
+| Status | Target |
+|---|---:|
+| Approved | 12 |
+| Pending | 6 |
+| Rejected | 4 |
+| Cancelled after approval | 3 |
+| **Total** | **25** |
+
+The three cancelled requests must have been approved before cancellation. Each should demonstrate the ledger reversal flow: the original `CONSUMED` ledger entry remains and a corresponding `REVERSAL` entry is created.
+
+The six pending requests should be distributed across both approval steps so the approval workflow can be demonstrated at each level.
+
+The four rejected requests should contain realistic rejection comments.
 
 Include a mixture of:
 
@@ -104,9 +141,20 @@ Each revision should contain:
 
 Historical revisions must remain available after the new salary becomes effective.
 
+### Required Demo Accounts
+
+| Email | Password | Role | Seed Profile |
+|---|---|---|---|
+| admin@dayflow.io | Dayflow@2026 | ADMIN | Admin account |
+| hr@dayflow.io | Dayflow@2026 | HR | HR approval account |
+| priya@dayflow.io | Dayflow@2026 | EMPLOYEE | Rich history + low leave balance |
+| arjun@dayflow.io | Dayflow@2026 | EMPLOYEE | Clean-slate employee |
+
+All four accounts must be seeded with `users.status = 'ACTIVE'` and a populated `email_verified_at`.
+
 ## 6. Low-Balance Demo Employee
 
-Create one employee specifically for the insufficient-leave-balance demo.
+Use Priya (`priya@dayflow.io`) as the employee for the insufficient-leave-balance demo.
 
 Requirements:
 

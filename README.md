@@ -135,6 +135,41 @@ There is no balance column anywhere. That 1.50 is the sum of three rows.
 
 ---
 
+## Schema
+
+![Dayflow HRMS entity relationship diagram](docs/schema-diagram.png)
+
+Nineteen tables and 27 foreign keys. The source is [docs/schema.mmd](docs/schema.mmd), a
+Mermaid `erDiagram` written from `db/migrations/001..007` and then cross-checked against
+`information_schema` and `pg_constraint` in a live database — every column and every
+relationship in it is one the schema actually has, and none is missing.
+
+`leave_balance_ledger` sits at the centre deliberately. Nothing anywhere stores a balance,
+so the only route from "how much leave does this person have left" to an answer runs
+through that table and the `v_leave_balances` view over it.
+
+Three shapes in the diagram are worth pausing on:
+
+- **`leave_balance_ledger.ref_request_id` is nullable.** An `OPENING` or `ACCRUAL` row
+  belongs to no request; only `CONSUMED` and `REVERSAL` rows point back at one. That is why
+  the relationship reads zero-or-one rather than exactly-one.
+- **`attendance_days` has a composite primary key** — `(employee_id, work_date)`, with no
+  surrogate id. It is derived state: one row per person per day, rebuilt from the punch
+  tape rather than accumulated, so the natural key is the whole identity.
+- **`approval_chain_rules.leave_type_id` is nullable**, and `NULL` means "applies to every
+  leave type". Those are the rows the routing lookup matches by default.
+
+The two views, `v_leave_balances` and `v_pending_approvals`, are not drawn — an ER diagram
+shows tables, and both are defined in `db/migrations/007_views_and_indexes.sql`.
+
+Regenerate the image after changing the schema:
+
+```bash
+npx @mermaid-js/mermaid-cli -i docs/schema.mmd -o docs/schema-diagram.png -b white -w 3600 -s 2
+```
+
+---
+
 ## Architecture decisions worth defending
 
 ### The ledger is append-only, and balances are never stored

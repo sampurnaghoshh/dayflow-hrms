@@ -98,11 +98,13 @@ const deptId = (code) => `(SELECT id FROM departments WHERE code = ${sq(code)})`
 // ---------------------------------------------------------------------------
 // the roster
 //
-// Departments are ENG / PPL / FIN / SLS - the four in 01_reference.sql. The seed plan
-// asks for "Design" instead of Sales; Design does not exist in the reference data, and
-// inventing it would either leave Sales with no employees (so it vanishes from the
-// attendance chart, which inner-joins departments) or make five departments where the
-// plan says four. Sales carries the plan's two Design headcount instead.
+// Departments are ENG / PPL / FIN / DES - the four in 01_reference.sql, matching the
+// seed plan's Engineering / People Ops / Finance / Design.
+//
+// The department is looked up BY CODE at seed time - (SELECT id FROM departments WHERE
+// code = ...) - not by a hardcoded id. Renaming a department in 01_reference.sql without
+// changing the code here would leave those subqueries returning NULL and the employees
+// with no department at all.
 //
 // Every employee has a department, without exception: KPI 1 in §7 inner-joins
 // departments and silently drops anyone without one.
@@ -118,8 +120,8 @@ const ROSTER = [
   { code: 'DF-008', name: 'Sanjay Kulkarni', dept: 'FIN', role: 'EMPLOYEE', title: 'Finance Manager',     joined: '2024-05-06', ctc: '1500000', archetype: 'punctual' },
   { code: 'DF-009', name: 'Kavita Reddy',    dept: 'FIN', role: 'EMPLOYEE', title: 'Accountant',          joined: '2025-03-17', ctc: '900000',  archetype: 'average'  },
   { code: 'DF-010', name: 'Imran Sheikh',    dept: 'FIN', role: 'EMPLOYEE', title: 'Payroll Analyst',     joined: '2026-02-02', ctc: '850000',  archetype: 'average'  },
-  { code: 'DF-011', name: 'Deepa Nambiar',   dept: 'SLS', role: 'EMPLOYEE', title: 'Account Executive',   joined: '2025-06-09', ctc: '1100000', archetype: 'edgy'     },
-  { code: 'DF-012', name: 'Farhan Qureshi',  dept: 'SLS', role: 'EMPLOYEE', title: 'Sales Associate',     joined: '2025-10-13', ctc: '950000',  archetype: 'late'     },
+  { code: 'DF-011', name: 'Deepa Nambiar',   dept: 'DES', role: 'EMPLOYEE', title: 'Product Designer',    joined: '2025-06-09', ctc: '1100000', archetype: 'edgy'     },
+  { code: 'DF-012', name: 'Farhan Qureshi',  dept: 'DES', role: 'EMPLOYEE', title: 'UX Designer',         joined: '2025-10-13', ctc: '950000',  archetype: 'late'     },
 ];
 
 const byCode = Object.fromEntries(ROSTER.map((r) => [r.code, r]));

@@ -1,0 +1,237 @@
+erDiagram
+
+    leave_balance_ledger {
+        bigint id PK "GENERATED ALWAYS AS IDENTITY"
+        bigint employee_id FK "NOT NULL"
+        bigint leave_type_id FK "NOT NULL"
+        numeric delta "NUMERIC(6,2) NOT NULL, CHECK delta <> 0"
+        ledger_reason reason "NOT NULL: OPENING ACCRUAL CONSUMED REVERSAL CARRY_FORWARD ADJUSTMENT"
+        bigint ref_request_id FK "nullable, fk_ledger_request"
+        text note "nullable"
+        bigint created_by FK "nullable, users.id"
+        timestamptz created_at "NOT NULL DEFAULT now()"
+    }
+
+    leave_requests {
+        bigint id PK "GENERATED ALWAYS AS IDENTITY"
+        bigint employee_id FK "NOT NULL"
+        bigint leave_type_id FK "NOT NULL"
+        date start_date "NOT NULL"
+        date end_date "NOT NULL, CHECK end_date >= start_date"
+        numeric day_count "NUMERIC(5,2) NOT NULL, CHECK > 0"
+        text remarks "nullable"
+        leave_status status "NOT NULL DEFAULT PENDING"
+        smallint current_step "NOT NULL DEFAULT 1"
+        daterange period "GENERATED STORED daterange(start,end,inclusive)"
+        timestamptz created_at "NOT NULL DEFAULT now()"
+        timestamptz decided_at "nullable"
+    }
+
+    leave_types {
+        bigint id PK "GENERATED ALWAYS AS IDENTITY"
+        text code UK "NOT NULL: PAID SICK UNPAID"
+        text name "NOT NULL"
+        boolean is_paid "NOT NULL"
+        numeric accrual_per_month "NUMERIC(5,2) NOT NULL DEFAULT 0"
+        numeric annual_cap "NUMERIC(5,2) nullable"
+        numeric carry_forward_cap "NUMERIC(5,2) NOT NULL DEFAULT 0"
+        boolean requires_document "NOT NULL DEFAULT false"
+        boolean is_active "NOT NULL DEFAULT true"
+    }
+
+    approval_chain_rules {
+        bigint id PK "GENERATED ALWAYS AS IDENTITY"
+        bigint leave_type_id FK "nullable - NULL applies to all types"
+        numeric min_days "NUMERIC(5,2) NOT NULL DEFAULT 0"
+        numeric max_days "NUMERIC(5,2) NOT NULL DEFAULT 999"
+        smallint step_no "NOT NULL"
+        user_role approver_role "NOT NULL: EMPLOYEE HR ADMIN"
+    }
+
+    approval_steps {
+        bigint id PK "GENERATED ALWAYS AS IDENTITY"
+        bigint request_id FK "NOT NULL, ON DELETE CASCADE"
+        smallint step_no "NOT NULL, UNIQUE with request_id"
+        user_role approver_role "NOT NULL"
+        bigint approver_user_id FK "nullable, filled at decision time"
+        step_status status "NOT NULL DEFAULT PENDING: PENDING APPROVED REJECTED SKIPPED"
+        text comment "nullable"
+        timestamptz acted_at "nullable"
+    }
+
+    employees {
+        bigint id PK "GENERATED ALWAYS AS IDENTITY"
+        bigint user_id FK,UK "NOT NULL UNIQUE, ON DELETE CASCADE"
+        text full_name "NOT NULL"
+        bigint department_id FK "nullable"
+        bigint manager_id FK "nullable, self-reference, CHECK no_self_manage"
+        text designation "nullable"
+        date date_of_joining "NOT NULL"
+        text phone "nullable"
+        text address "nullable"
+        text profile_photo_path "nullable"
+    }
+
+    users {
+        bigint id PK "GENERATED ALWAYS AS IDENTITY"
+        text employee_code UK "NOT NULL"
+        citext email UK "NOT NULL, case-insensitive"
+        text password_hash "NOT NULL, bcrypt cost 10"
+        user_role role "NOT NULL DEFAULT EMPLOYEE"
+        user_status status "NOT NULL DEFAULT PENDING_VERIFICATION"
+        timestamptz email_verified_at "nullable"
+        timestamptz last_login_at "nullable"
+        timestamptz created_at "NOT NULL DEFAULT now()"
+    }
+
+    departments {
+        bigint id PK "GENERATED ALWAYS AS IDENTITY"
+        text code UK "NOT NULL"
+        text name "NOT NULL"
+    }
+
+    email_verification_tokens {
+        bigint id PK "GENERATED ALWAYS AS IDENTITY"
+        bigint user_id FK "NOT NULL, ON DELETE CASCADE"
+        text token_hash "NOT NULL, sha256 - raw token never stored"
+        timestamptz expires_at "NOT NULL"
+        timestamptz consumed_at "nullable"
+        timestamptz created_at "NOT NULL DEFAULT now()"
+    }
+
+    employee_documents {
+        bigint id PK "GENERATED ALWAYS AS IDENTITY"
+        bigint employee_id FK "NOT NULL, ON DELETE CASCADE"
+        text doc_type "NOT NULL: ID_PROOF OFFER_LETTER CERTIFICATE OTHER"
+        text original_name "NOT NULL, label only - never used as a path"
+        text stored_path "NOT NULL, random filename"
+        text mime_type "NOT NULL"
+        integer size_bytes "NOT NULL, CHECK > 0 AND <= 5242880"
+        bigint uploaded_by FK "NOT NULL, users.id"
+        timestamptz uploaded_at "NOT NULL DEFAULT now()"
+    }
+
+    attendance_punches {
+        bigint id PK "GENERATED ALWAYS AS IDENTITY"
+        bigint employee_id FK "NOT NULL"
+        timestamptz punch_at "NOT NULL DEFAULT now() - SERVER time only"
+        punch_direction direction "NOT NULL: IN OUT"
+        text source "NOT NULL DEFAULT WEB"
+        text idempotency_key "nullable, UNIQUE per employee when present"
+        timestamptz created_at "NOT NULL DEFAULT now()"
+    }
+
+    attendance_days {
+        bigint employee_id PK,FK "NOT NULL, composite PK"
+        date work_date PK "NOT NULL, composite PK"
+        day_status status "NOT NULL: PRESENT ABSENT HALF_DAY ON_LEAVE HOLIDAY WEEKEND"
+        integer worked_minutes "NOT NULL DEFAULT 0"
+        timestamptz first_in "nullable"
+        timestamptz last_out "nullable"
+        bigint leave_request_id FK "nullable"
+        timestamptz computed_at "NOT NULL DEFAULT now()"
+    }
+
+    holidays {
+        bigint id PK "GENERATED ALWAYS AS IDENTITY"
+        date holiday_date UK "NOT NULL"
+        text name "NOT NULL"
+    }
+
+    employee_salary_versions {
+        bigint id PK "GENERATED ALWAYS AS IDENTITY"
+        bigint employee_id FK "NOT NULL"
+        date effective_from "NOT NULL"
+        date effective_to "nullable - NULL means current"
+        numeric ctc_annual "NUMERIC(12,2) NOT NULL, CHECK > 0"
+        bigint created_by FK "NOT NULL, users.id"
+        timestamptz created_at "NOT NULL DEFAULT now()"
+        daterange validity "GENERATED STORED daterange(from,to,half-open)"
+    }
+
+    salary_components {
+        bigint id PK "GENERATED ALWAYS AS IDENTITY"
+        bigint salary_version_id FK "NOT NULL, ON DELETE CASCADE"
+        text code "NOT NULL, UNIQUE with version: BASIC HRA SPECIAL PF PT"
+        text label "NOT NULL"
+        component_kind kind "NOT NULL: EARNING DEDUCTION"
+        numeric monthly_amount "NUMERIC(12,2) NOT NULL, CHECK >= 0"
+    }
+
+    payslips {
+        bigint id PK "GENERATED ALWAYS AS IDENTITY"
+        bigint employee_id FK "NOT NULL, UNIQUE with period_month"
+        date period_month "NOT NULL, always the 1st"
+        bigint salary_version_id FK "NOT NULL"
+        numeric payable_days "NUMERIC(5,2) NOT NULL"
+        numeric lop_days "NUMERIC(5,2) NOT NULL DEFAULT 0"
+        numeric gross_earnings "NUMERIC(12,2) NOT NULL"
+        numeric total_deductions "NUMERIC(12,2) NOT NULL"
+        numeric net_pay "NUMERIC(12,2) NOT NULL"
+        bigint generated_by FK "NOT NULL, users.id"
+        timestamptz generated_at "NOT NULL DEFAULT now()"
+    }
+
+    payslip_line_items {
+        bigint id PK "GENERATED ALWAYS AS IDENTITY"
+        bigint payslip_id FK "NOT NULL, ON DELETE CASCADE"
+        text code "NOT NULL"
+        text label "NOT NULL"
+        component_kind kind "NOT NULL: EARNING DEDUCTION"
+        numeric amount "NUMERIC(12,2) NOT NULL"
+    }
+
+    audit_log {
+        bigint id PK "GENERATED ALWAYS AS IDENTITY"
+        bigint actor_user_id FK "nullable"
+        text entity "NOT NULL"
+        bigint entity_id "nullable"
+        text action "NOT NULL"
+        jsonb before_state "nullable"
+        jsonb after_state "nullable"
+        inet ip_address "nullable"
+        timestamptz created_at "NOT NULL DEFAULT now()"
+    }
+
+    notifications {
+        bigint id PK "GENERATED ALWAYS AS IDENTITY"
+        bigint user_id FK "NOT NULL, ON DELETE CASCADE"
+        text title "NOT NULL"
+        text body "nullable"
+        text link "nullable"
+        timestamptz read_at "nullable"
+        timestamptz created_at "NOT NULL DEFAULT now()"
+    }
+
+    employees            ||--o{ leave_balance_ledger : "employee_id"
+    leave_types          ||--o{ leave_balance_ledger : "leave_type_id"
+    leave_requests       |o--o{ leave_balance_ledger : "ref_request_id"
+    users                |o--o{ leave_balance_ledger : "created_by"
+
+    employees            ||--o{ leave_requests : "employee_id"
+    leave_types          ||--o{ leave_requests : "leave_type_id"
+    leave_requests       ||--o{ approval_steps : "request_id CASCADE"
+    users                |o--o{ approval_steps : "approver_user_id"
+    leave_types          |o--o{ approval_chain_rules : "leave_type_id"
+
+    users                ||--o| employees : "user_id UNIQUE CASCADE"
+    departments          |o--o{ employees : "department_id"
+    employees            |o--o{ employees : "manager_id"
+    users                ||--o{ email_verification_tokens : "user_id CASCADE"
+    employees            ||--o{ employee_documents : "employee_id CASCADE"
+    users                ||--o{ employee_documents : "uploaded_by"
+
+    employees            ||--o{ attendance_punches : "employee_id"
+    employees            ||--o{ attendance_days : "employee_id"
+    leave_requests       |o--o{ attendance_days : "leave_request_id"
+
+    employees            ||--o{ employee_salary_versions : "employee_id"
+    users                ||--o{ employee_salary_versions : "created_by"
+    employee_salary_versions ||--o{ salary_components : "salary_version_id CASCADE"
+    employees            ||--o{ payslips : "employee_id"
+    employee_salary_versions ||--o{ payslips : "salary_version_id"
+    users                ||--o{ payslips : "generated_by"
+    payslips             ||--o{ payslip_line_items : "payslip_id CASCADE"
+
+    users                |o--o{ audit_log : "actor_user_id"
+    users                ||--o{ notifications : "user_id CASCADE"

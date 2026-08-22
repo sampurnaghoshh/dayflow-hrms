@@ -34,7 +34,7 @@ CREATE TEMP TABLE seed_sal (key TEXT PRIMARY KEY, version_id BIGINT) ON COMMIT D
 -- ---------------------------------------------------------------------------
 WITH u AS (
   INSERT INTO users (employee_code, email, password_hash, role, status, email_verified_at, created_at)
-  VALUES ('DF-001', 'meera.nair@dayflow.example', '$2b$10$POHYXybe44VZ9hbZX62Z2./l5fWfNsh5k3UIkYnWo0OQo80.TCE36', 'ADMIN'::user_role, 'ACTIVE',
+  VALUES ('DF-001', 'meera.nair@dayflow.example', '$2b$10$NxCZvhwVX2RugPxO37mWg.QrFdSHE3.XGPXepPbOzuUmUpBWL4IeC', 'ADMIN'::user_role, 'ACTIVE',
           '2024-03-04 09:30:00+05:30'::timestamptz, '2024-03-04 09:00:00+05:30'::timestamptz)
   RETURNING id
 ), e AS (
@@ -46,7 +46,7 @@ WITH u AS (
 INSERT INTO seed_emp (code, user_id, employee_id) SELECT 'DF-001', e.user_id, e.id FROM e;
 WITH u AS (
   INSERT INTO users (employee_code, email, password_hash, role, status, email_verified_at, created_at)
-  VALUES ('DF-002', 'arjun.rao@dayflow.example', '$2b$10$POHYXybe44VZ9hbZX62Z2./l5fWfNsh5k3UIkYnWo0OQo80.TCE36', 'ADMIN'::user_role, 'ACTIVE',
+  VALUES ('DF-002', 'arjun.rao@dayflow.example', '$2b$10$NxCZvhwVX2RugPxO37mWg.QrFdSHE3.XGPXepPbOzuUmUpBWL4IeC', 'ADMIN'::user_role, 'ACTIVE',
           '2024-06-17 09:30:00+05:30'::timestamptz, '2024-06-17 09:00:00+05:30'::timestamptz)
   RETURNING id
 ), e AS (
@@ -58,7 +58,7 @@ WITH u AS (
 INSERT INTO seed_emp (code, user_id, employee_id) SELECT 'DF-002', e.user_id, e.id FROM e;
 WITH u AS (
   INSERT INTO users (employee_code, email, password_hash, role, status, email_verified_at, created_at)
-  VALUES ('DF-003', 'nita.sharma@dayflow.example', '$2b$10$POHYXybe44VZ9hbZX62Z2./l5fWfNsh5k3UIkYnWo0OQo80.TCE36', 'HR'::user_role, 'ACTIVE',
+  VALUES ('DF-003', 'nita.sharma@dayflow.example', '$2b$10$NxCZvhwVX2RugPxO37mWg.QrFdSHE3.XGPXepPbOzuUmUpBWL4IeC', 'HR'::user_role, 'ACTIVE',
           '2024-09-02 09:30:00+05:30'::timestamptz, '2024-09-02 09:00:00+05:30'::timestamptz)
   RETURNING id
 ), e AS (
@@ -70,7 +70,7 @@ WITH u AS (
 INSERT INTO seed_emp (code, user_id, employee_id) SELECT 'DF-003', e.user_id, e.id FROM e;
 WITH u AS (
   INSERT INTO users (employee_code, email, password_hash, role, status, email_verified_at, created_at)
-  VALUES ('DF-004', 'vikram.desai@dayflow.example', '$2b$10$POHYXybe44VZ9hbZX62Z2./l5fWfNsh5k3UIkYnWo0OQo80.TCE36', 'EMPLOYEE'::user_role, 'ACTIVE',
+  VALUES ('DF-004', 'vikram.desai@dayflow.example', '$2b$10$NxCZvhwVX2RugPxO37mWg.QrFdSHE3.XGPXepPbOzuUmUpBWL4IeC', 'EMPLOYEE'::user_role, 'ACTIVE',
           '2024-01-15 09:30:00+05:30'::timestamptz, '2024-01-15 09:00:00+05:30'::timestamptz)
   RETURNING id
 ), e AS (
@@ -82,7 +82,7 @@ WITH u AS (
 INSERT INTO seed_emp (code, user_id, employee_id) SELECT 'DF-004', e.user_id, e.id FROM e;
 WITH u AS (
   INSERT INTO users (employee_code, email, password_hash, role, status, email_verified_at, created_at)
-  VALUES ('DF-005', 'priya.menon@dayflow.example', '$2b$10$POHYXybe44VZ9hbZX62Z2./l5fWfNsh5k3UIkYnWo0OQo80.TCE36', 'EMPLOYEE'::user_role, 'ACTIVE',
+  VALUES ('DF-005', 'priya.menon@dayflow.example', '$2b$10$NxCZvhwVX2RugPxO37mWg.QrFdSHE3.XGPXepPbOzuUmUpBWL4IeC', 'EMPLOYEE'::user_role, 'ACTIVE',
           '2025-02-10 09:30:00+05:30'::timestamptz, '2025-02-10 09:00:00+05:30'::timestamptz)
   RETURNING id
 ), e AS (
@@ -94,7 +94,7 @@ WITH u AS (
 INSERT INTO seed_emp (code, user_id, employee_id) SELECT 'DF-005', e.user_id, e.id FROM e;
 WITH u AS (
   INSERT INTO users (employee_code, email, password_hash, role, status, email_verified_at, created_at)
-  VALUES ('DF-006', 'rahul.iyer@dayflow.example', '$2b$10$POHYXybe44VZ9hbZX62Z2./l5fWfNsh5k3UIkYnWo0OQo80.TCE36', 'EMPLOYEE'::user_role, 'ACTIVE',
+  VALUES ('DF-006', 'rahul.iyer@dayflow.example', '$2b$10$NxCZvhwVX2RugPxO37mWg.QrFdSHE3.XGPXepPbOzuUmUpBWL4IeC', 'EMPLOYEE'::user_role, 'ACTIVE',
           '2025-07-21 09:30:00+05:30'::timestamptz, '2025-07-21 09:00:00+05:30'::timestamptz)
   RETURNING id
 ), e AS (
@@ -106,7 +106,7 @@ WITH u AS (
 INSERT INTO seed_emp (code, user_id, employee_id) SELECT 'DF-006', e.user_id, e.id FROM e;
 WITH u AS (
   INSERT INTO users (employee_code, email, password_hash, role, status, email_verified_at, created_at)
-  VALUES ('DF-007', 'ananya.ghosh@dayflow.example', '$2b$10$POHYXybe44VZ9hbZX62Z2./l5fWfNsh5k3UIkYnWo0OQo80.TCE36', 'EMPLOYEE'::user_role, 'ACTIVE',
+  VALUES ('DF-007', 'ananya.ghosh@dayflow.example', '$2b$10$NxCZvhwVX2RugPxO37mWg.QrFdSHE3.XGPXepPbOzuUmUpBWL4IeC', 'EMPLOYEE'::user_role, 'ACTIVE',
           '2025-11-03 09:30:00+05:30'::timestamptz, '2025-11-03 09:00:00+05:30'::timestamptz)
   RETURNING id
 ), e AS (
@@ -118,7 +118,7 @@ WITH u AS (
 INSERT INTO seed_emp (code, user_id, employee_id) SELECT 'DF-007', e.user_id, e.id FROM e;
 WITH u AS (
   INSERT INTO users (employee_code, email, password_hash, role, status, email_verified_at, created_at)
-  VALUES ('DF-008', 'sanjay.kulkarni@dayflow.example', '$2b$10$POHYXybe44VZ9hbZX62Z2./l5fWfNsh5k3UIkYnWo0OQo80.TCE36', 'EMPLOYEE'::user_role, 'ACTIVE',
+  VALUES ('DF-008', 'sanjay.kulkarni@dayflow.example', '$2b$10$NxCZvhwVX2RugPxO37mWg.QrFdSHE3.XGPXepPbOzuUmUpBWL4IeC', 'EMPLOYEE'::user_role, 'ACTIVE',
           '2024-05-06 09:30:00+05:30'::timestamptz, '2024-05-06 09:00:00+05:30'::timestamptz)
   RETURNING id
 ), e AS (
@@ -130,7 +130,7 @@ WITH u AS (
 INSERT INTO seed_emp (code, user_id, employee_id) SELECT 'DF-008', e.user_id, e.id FROM e;
 WITH u AS (
   INSERT INTO users (employee_code, email, password_hash, role, status, email_verified_at, created_at)
-  VALUES ('DF-009', 'kavita.reddy@dayflow.example', '$2b$10$POHYXybe44VZ9hbZX62Z2./l5fWfNsh5k3UIkYnWo0OQo80.TCE36', 'EMPLOYEE'::user_role, 'ACTIVE',
+  VALUES ('DF-009', 'kavita.reddy@dayflow.example', '$2b$10$NxCZvhwVX2RugPxO37mWg.QrFdSHE3.XGPXepPbOzuUmUpBWL4IeC', 'EMPLOYEE'::user_role, 'ACTIVE',
           '2025-03-17 09:30:00+05:30'::timestamptz, '2025-03-17 09:00:00+05:30'::timestamptz)
   RETURNING id
 ), e AS (
@@ -142,7 +142,7 @@ WITH u AS (
 INSERT INTO seed_emp (code, user_id, employee_id) SELECT 'DF-009', e.user_id, e.id FROM e;
 WITH u AS (
   INSERT INTO users (employee_code, email, password_hash, role, status, email_verified_at, created_at)
-  VALUES ('DF-010', 'imran.sheikh@dayflow.example', '$2b$10$POHYXybe44VZ9hbZX62Z2./l5fWfNsh5k3UIkYnWo0OQo80.TCE36', 'EMPLOYEE'::user_role, 'ACTIVE',
+  VALUES ('DF-010', 'imran.sheikh@dayflow.example', '$2b$10$NxCZvhwVX2RugPxO37mWg.QrFdSHE3.XGPXepPbOzuUmUpBWL4IeC', 'EMPLOYEE'::user_role, 'ACTIVE',
           '2026-02-02 09:30:00+05:30'::timestamptz, '2026-02-02 09:00:00+05:30'::timestamptz)
   RETURNING id
 ), e AS (
@@ -154,24 +154,24 @@ WITH u AS (
 INSERT INTO seed_emp (code, user_id, employee_id) SELECT 'DF-010', e.user_id, e.id FROM e;
 WITH u AS (
   INSERT INTO users (employee_code, email, password_hash, role, status, email_verified_at, created_at)
-  VALUES ('DF-011', 'deepa.nambiar@dayflow.example', '$2b$10$POHYXybe44VZ9hbZX62Z2./l5fWfNsh5k3UIkYnWo0OQo80.TCE36', 'EMPLOYEE'::user_role, 'ACTIVE',
+  VALUES ('DF-011', 'deepa.nambiar@dayflow.example', '$2b$10$NxCZvhwVX2RugPxO37mWg.QrFdSHE3.XGPXepPbOzuUmUpBWL4IeC', 'EMPLOYEE'::user_role, 'ACTIVE',
           '2025-06-09 09:30:00+05:30'::timestamptz, '2025-06-09 09:00:00+05:30'::timestamptz)
   RETURNING id
 ), e AS (
   INSERT INTO employees (user_id, full_name, department_id, designation, date_of_joining, phone, address)
-  SELECT u.id, 'Deepa Nambiar', (SELECT id FROM departments WHERE code = 'SLS'), 'Account Executive', DATE '2025-06-09',
+  SELECT u.id, 'Deepa Nambiar', (SELECT id FROM departments WHERE code = 'DES'), 'Product Designer', DATE '2025-06-09',
          '+91 998676186', '110 MG Road, Bengaluru'
   FROM u RETURNING id, user_id
 )
 INSERT INTO seed_emp (code, user_id, employee_id) SELECT 'DF-011', e.user_id, e.id FROM e;
 WITH u AS (
   INSERT INTO users (employee_code, email, password_hash, role, status, email_verified_at, created_at)
-  VALUES ('DF-012', 'farhan.qureshi@dayflow.example', '$2b$10$POHYXybe44VZ9hbZX62Z2./l5fWfNsh5k3UIkYnWo0OQo80.TCE36', 'EMPLOYEE'::user_role, 'ACTIVE',
+  VALUES ('DF-012', 'farhan.qureshi@dayflow.example', '$2b$10$NxCZvhwVX2RugPxO37mWg.QrFdSHE3.XGPXepPbOzuUmUpBWL4IeC', 'EMPLOYEE'::user_role, 'ACTIVE',
           '2025-10-13 09:30:00+05:30'::timestamptz, '2025-10-13 09:00:00+05:30'::timestamptz)
   RETURNING id
 ), e AS (
   INSERT INTO employees (user_id, full_name, department_id, designation, date_of_joining, phone, address)
-  SELECT u.id, 'Farhan Qureshi', (SELECT id FROM departments WHERE code = 'SLS'), 'Sales Associate', DATE '2025-10-13',
+  SELECT u.id, 'Farhan Qureshi', (SELECT id FROM departments WHERE code = 'DES'), 'UX Designer', DATE '2025-10-13',
          '+91 998309419', '113 MG Road, Bengaluru'
   FROM u RETURNING id, user_id
 )

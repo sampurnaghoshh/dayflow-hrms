@@ -1,20 +1,21 @@
-import { requireActor, requireRole, store } from './state.js';
+import { requireActor, requireRole, store, idStr } from './state.js';
 
+// Neither dashboard endpoint is in docs/api-shapes.md — these are computed/aggregated
+// responses (not raw table rows), so kept camelCase per the pattern seen elsewhere for
+// hand-built envelope fields; only genuine id values are stringified.
 export const dashboardHandlers = [
   {
     method: 'GET', pattern: '/dashboard/employee',
     handler: () => {
       const actor = requireActor();
-      const balances = store.leaveBalances.filter((b) => b.employeeId === actor.id);
       const recentActivity = store.notifications
         .filter((n) => n.userId === actor.userId)
         .slice(0, 8)
-        .map((n) => ({ id: n.id, title: n.title, body: n.body, link: n.link, createdAt: n.createdAt, read: !!n.readAt }));
+        .map((n) => ({ id: idStr(n.id), title: n.title, body: n.body, link: n.link, createdAt: n.createdAt, read: !!n.readAt }));
       const pendingLeaveRequests = store.leaveRequests.filter((r) => r.employeeId === actor.id && r.status === 'PENDING').length;
       const today = new Date().toISOString().slice(0, 10);
       const todayAttendance = store.attendanceDays.find((d) => d.employeeId === actor.id && d.workDate === today);
       return {
-        leaveBalances: balances,
         recentActivity,
         quickStats: { pendingLeaveRequests, todayStatus: todayAttendance?.status ?? 'ABSENT' },
       };
@@ -52,7 +53,7 @@ export const dashboardHandlers = [
         .map((e) => {
           const absences = store.attendanceDays.filter((d) => d.employeeId === e.id && d.status === 'ABSENT');
           const edgeDay = absences.filter((d) => [1, 5].includes(new Date(`${d.workDate}T00:00:00`).getDay()));
-          return { employeeId: e.id, fullName: e.fullName, edgeDayAbsences: edgeDay.length, totalAbsences: absences.length };
+          return { employeeId: idStr(e.id), fullName: e.fullName, edgeDayAbsences: edgeDay.length, totalAbsences: absences.length };
         })
         .filter((e) => e.totalAbsences >= 1)
         .sort((a, b) => b.edgeDayAbsences - a.edgeDayAbsences)

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.jsx';
 import { api } from '../api/client.js';
 import { useAdminEmployee } from '../context/AdminEmployeeContext.jsx';
+import { useStream } from '../context/StreamContext.jsx';
 import { adminNavItems } from './navConfig.js';
 
 const linkClasses = ({ isActive }) =>
@@ -42,6 +43,7 @@ function EmployeeSwitcher() {
 
 export default function AdminLayout() {
   const { user, signOut } = useAuth();
+  const { approvalBellCount } = useStream();
 
   return (
     <div className="flex min-h-screen bg-bg">
@@ -61,9 +63,24 @@ export default function AdminLayout() {
           <div className="text-sm text-text-muted">{user?.fullName} · {user?.role}</div>
           <div className="flex flex-wrap items-center gap-3">
             <EmployeeSwitcher />
-            <button type="button" aria-label="Notifications" className="rounded-full p-2 text-text hover:bg-surface-alt">
+            <Link
+              to="/"
+              className="rounded-md border border-border px-3 py-1.5 text-sm font-medium text-text hover:bg-surface-alt"
+            >
+              My workspace
+            </Link>
+            <Link
+              to="/admin/approvals"
+              aria-label={approvalBellCount > 0 ? `${approvalBellCount} new approval request${approvalBellCount === 1 ? '' : 's'}` : 'Notifications'}
+              className="relative rounded-full p-2 text-text hover:bg-surface-alt"
+            >
               🔔
-            </button>
+              {approvalBellCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-danger text-xs font-semibold text-text-inverse">
+                  {approvalBellCount > 9 ? '9+' : approvalBellCount}
+                </span>
+              )}
+            </Link>
             <button
               type="button"
               onClick={signOut}

@@ -5,6 +5,11 @@ import Card from '../../components/Card.jsx';
 import Button from '../../components/Button.jsx';
 import FormField from '../../components/FormField.jsx';
 
+// HR and ADMIN land in the admin area; EMPLOYEE lands on their own dashboard.
+function homeForRole(role) {
+  return role === 'HR' || role === 'ADMIN' ? '/admin' : '/';
+}
+
 export default function SignIn() {
   const { user, signIn } = useAuth();
   const navigate = useNavigate();
@@ -15,7 +20,7 @@ export default function SignIn() {
 
   // Already signed in (or just signed in) — send to the right home for the role.
   useEffect(() => {
-    if (user) navigate(user.role === 'EMPLOYEE' ? '/' : '/admin', { replace: true });
+    if (user) navigate(homeForRole(user.role), { replace: true });
   }, [user, navigate]);
 
   async function handleSubmit(e) {

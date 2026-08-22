@@ -2,8 +2,15 @@
 // endpoints in CLAUDE.md §6 are expected to return. Nothing here is persisted — mocks.js
 // clones this on load and mutates the clone in memory for the life of the tab.
 
+// Local calendar date, not UTC — d.toISOString().slice(0, 10) shifts a day backward in any
+// timezone ahead of UTC (the exact pitfall docs/api-shapes.md warns about: "do not run a
+// calendar day through new Date() and reformat it"). daysAgo() below already builds `d` at
+// local midnight, so reading it back with local getters keeps the two in agreement.
 function isoDate(d) {
-  return d.toISOString().slice(0, 10);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 function daysAgo(n) {
   const d = new Date();
@@ -12,10 +19,13 @@ function daysAgo(n) {
   return d;
 }
 
+// Matches db/seed/01_reference.sql exactly, EXCEPT department 4 — see the note on 'DES'
+// below; the seed file on disk still has ('SLS', 'Sales') there, not ('DES', 'Design').
 export const departments = [
   { id: 1, code: 'ENG', name: 'Engineering' },
-  { id: 2, code: 'PEO', name: 'People Ops' },
-  { id: 3, code: 'SAL', name: 'Sales' },
+  { id: 2, code: 'PPL', name: 'People Operations' },
+  { id: 3, code: 'FIN', name: 'Finance' },
+  { id: 4, code: 'DES', name: 'Design' }, // per this session's instruction — NOT yet in the seed file (still 'SLS'/'Sales')
 ];
 
 // Mock-only credential map. Never modeled on the real auth flow (no JWT, no hashing) —
@@ -36,23 +46,23 @@ export const employees = [
     departmentId: 1, departmentName: 'Engineering', managerId: 4, managerName: 'Daniel Reyes',
     designation: 'Software Engineer', dateOfJoining: '2023-03-14',
     phone: '+1 415 555 0134', address: '221 Market St, San Francisco, CA',
-    profilePhotoPath: null,
+    profilePhotoPath: null, emailVerifiedAt: '2023-03-14T09:00:00Z', lastLoginAt: null,
   },
   {
     id: 2, userId: 2, employeeCode: 'DF-1002', fullName: 'Marcus Lee',
     email: 'marcus.lee@dayflow.io', role: 'EMPLOYEE', status: 'ACTIVE',
-    departmentId: 3, departmentName: 'Sales', managerId: 5, managerName: 'Priya Nair',
-    designation: 'Account Executive', dateOfJoining: '2022-07-01',
+    departmentId: 4, departmentName: 'Design', managerId: null, managerName: null,
+    designation: 'Product Designer', dateOfJoining: '2022-07-01',
     phone: '+1 415 555 0177', address: '88 Mission St, San Francisco, CA',
-    profilePhotoPath: null,
+    profilePhotoPath: null, emailVerifiedAt: '2022-07-01T09:00:00Z', lastLoginAt: null,
   },
   {
     id: 3, userId: 3, employeeCode: 'DF-1003', fullName: 'Sofia Garcia',
     email: 'sofia.garcia@dayflow.io', role: 'HR', status: 'ACTIVE',
-    departmentId: 2, departmentName: 'People Ops', managerId: null, managerName: null,
+    departmentId: 2, departmentName: 'People Operations', managerId: null, managerName: null,
     designation: 'HR Business Partner', dateOfJoining: '2021-01-11',
     phone: '+1 415 555 0199', address: '500 Howard St, San Francisco, CA',
-    profilePhotoPath: null,
+    profilePhotoPath: null, emailVerifiedAt: '2021-01-11T09:00:00Z', lastLoginAt: null,
   },
   {
     id: 4, userId: 4, employeeCode: 'DF-1004', fullName: 'Daniel Reyes',
@@ -60,15 +70,15 @@ export const employees = [
     departmentId: 1, departmentName: 'Engineering', managerId: null, managerName: null,
     designation: 'Engineering Director', dateOfJoining: '2020-05-20',
     phone: '+1 415 555 0111', address: '1 Front St, San Francisco, CA',
-    profilePhotoPath: null,
+    profilePhotoPath: null, emailVerifiedAt: '2020-05-20T09:00:00Z', lastLoginAt: null,
   },
   {
     id: 5, userId: 5, employeeCode: 'DF-1005', fullName: 'Priya Nair',
     email: 'priya.nair@dayflow.io', role: 'HR', status: 'ACTIVE',
-    departmentId: 3, departmentName: 'Sales', managerId: null, managerName: null,
-    designation: 'Sales Manager', dateOfJoining: '2021-09-02',
+    departmentId: 3, departmentName: 'Finance', managerId: null, managerName: null,
+    designation: 'Finance Manager', dateOfJoining: '2021-09-02',
     phone: '+1 415 555 0155', address: '45 2nd St, San Francisco, CA',
-    profilePhotoPath: null,
+    profilePhotoPath: null, emailVerifiedAt: '2021-09-02T09:00:00Z', lastLoginAt: null,
   },
   {
     id: 6, userId: 6, employeeCode: 'DF-1006', fullName: 'Noah Kim',
@@ -76,6 +86,7 @@ export const employees = [
     departmentId: 1, departmentName: 'Engineering', managerId: 4, managerName: 'Daniel Reyes',
     designation: 'Junior Developer', dateOfJoining: '2026-08-10',
     phone: null, address: null, profilePhotoPath: null,
+    emailVerifiedAt: null, lastLoginAt: null,
   },
 ];
 
@@ -122,7 +133,10 @@ export const leaveRequests = [
   },
   {
     id: 103, employeeId: 1, employeeName: 'Ava Thompson', leaveTypeId: 1, leaveCode: 'PAID',
-    startDate: isoDate(daysAgo(-10)), endDate: isoDate(daysAgo(-8)), dayCount: 3, remarks: 'Conference',
+    // daysAgo(-N) counts forward from today, so the larger N is the later date — -8 must be
+    // the start and -10 the end, not the other way round (that inversion was the reported
+    // bug). dayCount is 2, not 3: the range includes a weekend day, which doesn't count.
+    startDate: isoDate(daysAgo(-8)), endDate: isoDate(daysAgo(-10)), dayCount: 2, remarks: 'Conference',
     status: 'PENDING', currentStep: 1, createdAt: new Date().toISOString(), decidedAt: null,
     steps: [
       { id: 1004, stepNo: 1, approverRole: 'HR', approverName: null, status: 'PENDING', comment: null, actedAt: null },
@@ -177,15 +191,19 @@ function buildAttendanceDays(employeeId, pattern) {
   });
 }
 
+// One employee per department (ENG=1 Ava, PPL=3 Sofia, FIN=5 Priya, DES=2 Marcus) so the
+// admin dashboard's attendance-by-department chart has all four bars, not just two.
 export const attendanceDays = [
   ...buildAttendanceDays(1, ['PRESENT', 'PRESENT', 'PRESENT', 'ABSENT', 'PRESENT', 'PRESENT', 'PRESENT', 'HALF_DAY', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT']),
   ...buildAttendanceDays(2, ['PRESENT', 'PRESENT', 'HALF_DAY', 'PRESENT', 'ABSENT', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT', 'ABSENT', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT']),
+  ...buildAttendanceDays(3, ['PRESENT', 'PRESENT', 'PRESENT', 'PRESENT', 'HALF_DAY', 'PRESENT', 'PRESENT', 'ABSENT', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT']),
+  ...buildAttendanceDays(5, ['PRESENT', 'ABSENT', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT', 'HALF_DAY', 'PRESENT', 'PRESENT', 'PRESENT', 'ABSENT', 'PRESENT', 'PRESENT', 'PRESENT']),
 ];
 
 export const todayPresence = [
   { employeeId: 1, employeeName: 'Ava Thompson', departmentName: 'Engineering', status: 'PRESENT', firstIn: `${isoDate(daysAgo(0))}T09:02:00Z`, lastOut: null },
-  { employeeId: 2, employeeName: 'Marcus Lee', departmentName: 'Sales', status: 'PRESENT', firstIn: `${isoDate(daysAgo(0))}T08:47:00Z`, lastOut: null },
-  { employeeId: 3, employeeName: 'Sofia Garcia', departmentName: 'People Ops', status: 'ON_LEAVE', firstIn: null, lastOut: null },
+  { employeeId: 2, employeeName: 'Marcus Lee', departmentName: 'Design', status: 'PRESENT', firstIn: `${isoDate(daysAgo(0))}T08:47:00Z`, lastOut: null },
+  { employeeId: 3, employeeName: 'Sofia Garcia', departmentName: 'People Operations', status: 'ON_LEAVE', firstIn: null, lastOut: null },
   { employeeId: 6, employeeName: 'Noah Kim', departmentName: 'Engineering', status: 'ABSENT', firstIn: null, lastOut: null },
 ];
 

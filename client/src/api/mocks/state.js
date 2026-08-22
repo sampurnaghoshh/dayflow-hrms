@@ -4,6 +4,7 @@ import * as fixtures from '../fixtures.js';
 // Deep-clone the fixtures once per tab so handlers can freely mutate "the database"
 // without polluting the imported module (which would leak across hot reloads).
 export const store = JSON.parse(JSON.stringify({
+  departments: fixtures.departments,
   employees: fixtures.employees,
   mockCredentials: fixtures.mockCredentials,
   leaveTypes: fixtures.leaveTypes,
@@ -102,6 +103,34 @@ export function businessDaysBetween(startDate, endDate) {
 export function balanceFor(employeeId, leaveTypeId) {
   const row = store.leaveBalances.find((b) => b.employeeId === employeeId && b.leaveTypeId === leaveTypeId);
   return row?.balance ?? 0;
+}
+
+// --- wire-shape helpers ----------------------------------------------------------------
+// The internal store keeps numbers (so business logic — balance math, day counts — stays
+// simple arithmetic). The real API stringifies every BIGINT id and NUMERIC money/day figure
+// (docs/api-shapes.md, node-postgres preserves precision this way — CLAUDE.md §1.9/§4).
+// Handlers call these when building the object they return, so the mock's wire format is
+// byte-identical to the real server; client.js's normalize() converts it straight back.
+export function money(n) {
+  return Number(n).toFixed(2);
+}
+export function idStr(n) {
+  return n === null || n === undefined ? null : String(n);
+}
+
+// --- mock stand-in for the real SSE stream (GET /api/stream) --------------------------
+// Handlers call emitStreamEvent() right after a mutation that the real backend would
+// broadcast (§5.1's "then: SSE broadcast 'approval:new'", and the decide/punch endpoints
+// per docs/api-shapes.md). client/src/context/StreamContext.jsx subscribes to this when
+// VITE_USE_MOCKS is true, so the same event names and payload shapes reach the same
+// dispatch code as a real EventSource would — the UI can't tell the difference.
+const streamListeners = new Set();
+export function emitStreamEvent(event, data) {
+  streamListeners.forEach((fn) => fn(event, data));
+}
+export function subscribeMockStream(fn) {
+  streamListeners.add(fn);
+  return () => streamListeners.delete(fn);
 }
 
 // path like '/employees/:id' vs actual '/employees/7' -> { id: '7' } | null

@@ -1,14 +1,39 @@
 import { ApiError } from '../ApiError.js';
-import { store, nextId, requireActor, requireRole, requireSelfOrRole } from './state.js';
+import { store, nextId, requireActor, requireRole, requireSelfOrRole, money, idStr } from './state.js';
+
+// components[].monthlyAmount is genuinely camelCase in the real response even though every
+// sibling field on the salary version itself is snake_case (docs/api-shapes.md) — the
+// backend builds this array by hand instead of returning the raw row. Replicated as-is.
+function toWireComponent(c) {
+  return { code: c.code, label: c.label, kind: c.kind, monthlyAmount: money(c.monthlyAmount) };
+}
+
+function toWireVersion(v) {
+  return {
+    id: idStr(v.id), employee_id: idStr(v.employeeId), effective_from: v.effectiveFrom,
+    effective_to: v.effectiveTo, ctc_annual: money(v.ctcAnnual), created_at: v.createdAt,
+    created_by_name: v.createdBy, components: v.components.map(toWireComponent),
+  };
+}
+
+function toWirePayslip(p) {
+  return {
+    id: idStr(p.id), employee_id: idStr(p.employeeId), period_month: p.periodMonth,
+    salary_version_id: idStr(p.salaryVersionId), payable_days: money(p.payableDays),
+    lop_days: money(p.lopDays), gross_earnings: money(p.grossEarnings),
+    total_deductions: money(p.totalDeductions), net_pay: money(p.netPay), generated_at: p.generatedAt,
+  };
+}
 
 function structureFor(employeeId) {
   const versions = store.salaryVersions
     .filter((s) => s.employeeId === employeeId)
     .sort((a, b) => b.effectiveFrom.localeCompare(a.effectiveFrom));
   return {
-    current: versions.find((v) => v.effectiveTo === null) ?? null,
-    history: versions,
-    payslips: store.payslips.filter((p) => p.employeeId === employeeId),
+    employeeId: idStr(employeeId),
+    current: versions.find((v) => v.effectiveTo === null) ? toWireVersion(versions.find((v) => v.effectiveTo === null)) : null,
+    history: versions.map(toWireVersion),
+    payslips: store.payslips.filter((p) => p.employeeId === employeeId).map(toWirePayslip),
   };
 }
 
@@ -18,6 +43,8 @@ export const payrollHandlers = [
     handler: () => structureFor(requireActor().id),
   },
   {
+    // Not separately documented, but Sampurna's GET /payroll/me capture is described as
+    // sharing the same shape for "any employee's structure + history" per CLAUDE.md §6.
     method: 'GET', pattern: '/payroll/employees/:id',
     handler: ({ id }) => {
       const actor = requireActor();
@@ -26,6 +53,7 @@ export const payrollHandlers = [
     },
   },
   {
+    // Not in docs/api-shapes.md — extrapolated to return the updated structureFor() shape.
     method: 'POST', pattern: '/payroll/employees/:id/structure',
     handler: ({ id }, { body }) => {
       const actor = requireActor();
@@ -49,6 +77,7 @@ export const payrollHandlers = [
     },
   },
   {
+    // Not in docs/api-shapes.md — extrapolated.
     method: 'POST', pattern: '/payroll/runs',
     handler: (_params, { body }) => {
       const actor = requireActor();
@@ -66,8 +95,7 @@ export const payrollHandlers = [
         const payslip = {
           id: nextId('payslip'), employeeId: e.id, periodMonth, salaryVersionId: version.id,
           payableDays: 30, lopDays: 0, grossEarnings: gross, totalDeductions: deductions, netPay: gross - deductions,
-          generatedAt: new Date().toISOString(),
-          lineItems: version.components.map((c) => ({ code: c.code, label: c.label, kind: c.kind, amount: c.monthlyAmount })),
+          generatedAt: new Date().toISOString(), lineItems: version.components.map((c) => ({ code: c.code, label: c.label, kind: c.kind, amount: c.monthlyAmount })),
         };
         store.payslips.push(payslip);
         created.push(payslip);
@@ -76,13 +104,19 @@ export const payrollHandlers = [
     },
   },
   {
+    // Not in docs/api-shapes.md — extrapolated (payslip fields + a guessed `lineItems` key).
+    // Owner-or-ADMIN only, per CLAUDE.md §6 and Sampurna's note — HR is deliberately excluded,
+    // even though HR can read the same figures via GET /payroll/employees/:id.
     method: 'GET', pattern: '/payroll/payslips/:id',
     handler: ({ id }) => {
       const actor = requireActor();
       const payslip = store.payslips.find((p) => p.id === Number(id));
       if (!payslip) throw new ApiError('NOT_FOUND', 'Not found.', [], 404);
-      requireSelfOrRole(actor, payslip.employeeId, ['HR', 'ADMIN']);
-      return payslip;
+      requireSelfOrRole(actor, payslip.employeeId, ['ADMIN']);
+      return {
+        ...toWirePayslip(payslip),
+        lineItems: (payslip.lineItems ?? []).map((li) => ({ code: li.code, label: li.label, kind: li.kind, amount: money(li.amount) })),
+      };
     },
   },
 ];

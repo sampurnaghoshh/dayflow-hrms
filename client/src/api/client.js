@@ -1,5 +1,6 @@
 import { ApiError } from './ApiError.js';
 import { mockRequest } from './mocks.js';
+import { normalize } from './normalize.js';
 
 // Flip in client/.env (VITE_USE_MOCKS=false) at the Step 5 integration merge.
 export const USE_MOCKS = import.meta.env.VITE_USE_MOCKS !== 'false';
@@ -40,7 +41,10 @@ async function errorFromResponse(res) {
 
 async function request(method, path, { body, query, isMultipart = false } = {}) {
   if (USE_MOCKS) {
-    return mockRequest(method, path, { body, query });
+    // The mock returns exactly what the real API returns (docs/api-shapes.md) — snake_case
+    // row fields, stringified ids/money — so it goes through the same normalize() as a real
+    // response. Screens can't tell the difference either way.
+    return normalize(await mockRequest(method, path, { body, query }));
   }
 
   const options = { method, credentials: 'include' };
@@ -64,7 +68,7 @@ async function request(method, path, { body, query, isMultipart = false } = {}) 
   if (!res.ok) throw await errorFromResponse(res);
 
   try {
-    return await res.json();
+    return normalize(await res.json());
   } catch {
     return null;
   }

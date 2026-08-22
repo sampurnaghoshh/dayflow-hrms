@@ -9,6 +9,7 @@ import { env } from './config/env.js';
 import { closePool, pool } from './db/pool.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { router as authRouter } from './modules/auth/auth.routes.js';
+import { router as leaveRouter } from './modules/leave/leave.routes.js';
 
 const app = express();
 
@@ -54,6 +55,7 @@ app.get('/api/health', async (req, res, next) => {
 });
 
 app.use('/api/auth', authRouter);
+app.use('/api/leave', leaveRouter);
 
 // Order is load-bearing: unmatched paths become a 404 AppError, and every error -
 // thrown, forwarded, or raised by postgres - leaves through the one handler.

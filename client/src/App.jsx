@@ -13,10 +13,13 @@ import VerifyEmail from './pages/auth/VerifyEmail.jsx';
 import EmployeeDashboard from './pages/employee/Dashboard.jsx';
 import LeaveApply from './pages/employee/LeaveApply.jsx';
 import LeaveHistory from './pages/employee/LeaveHistory.jsx';
+import Payslips from './pages/employee/Payslips.jsx';
+import AdminDashboard from './pages/admin/Dashboard.jsx';
 import ApprovalQueue from './pages/admin/ApprovalQueue.jsx';
 import Employees from './pages/admin/Employees.jsx';
 import EmployeeDetail from './pages/admin/EmployeeDetail.jsx';
 import AttendanceBoard from './pages/admin/AttendanceBoard.jsx';
+import PayrollAdmin from './pages/admin/PayrollAdmin.jsx';
 
 // Stand-in for every page not built yet — Steps 3 and 4 replace these one route at a time.
 function Placeholder({ title }) {
@@ -57,18 +60,18 @@ export default function App() {
                   <Route path="/attendance" element={<Placeholder title="Attendance" />} />
                   <Route path="/leave/apply" element={<LeaveApply />} />
                   <Route path="/leave/history" element={<LeaveHistory />} />
-                  <Route path="/payslips" element={<Placeholder title="Payslips" />} />
+                  <Route path="/payslips" element={<Payslips />} />
                 </Route>
               </Route>
 
               <Route element={<RoleRoute roles={['HR', 'ADMIN']} />}>
                 <Route element={<AdminLayoutWithContext />}>
-                  <Route path="/admin" element={<Placeholder title="Admin dashboard" />} />
+                  <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/employees" element={<Employees />} />
                   <Route path="/admin/employees/:id" element={<EmployeeDetail />} />
                   <Route path="/admin/approvals" element={<ApprovalQueue />} />
                   <Route path="/admin/attendance" element={<AttendanceBoard />} />
-                  <Route path="/admin/payroll" element={<Placeholder title="Payroll" />} />
+                  <Route path="/admin/payroll" element={<PayrollAdmin />} />
                 </Route>
               </Route>
             </Route>

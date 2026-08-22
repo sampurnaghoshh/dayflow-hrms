@@ -24,12 +24,14 @@ Each employee should have:
 - Department
 - Designation
 - Date of joining
-- Employment status
+- User account status (stored on `users.status`)
 - Annual CTC
 - Leave balances must not be stored as employee attributes. Seed opening ledger rows instead; the employee's balance is computed from the sum of ledger entries.
 - Reporting manager / approver where applicable
 
-  The seeded users must include at least one HR account and at least two ADMIN accounts. This is required for the two-step HR → ADMIN approval chain and ensures that two different authorised users can complete separate approval steps when required.
+  All demo accounts must be seeded as verified and loginable. Set `users.status = 'ACTIVE'` and populate `email_verified_at` so the demo accounts can sign in immediately.
+
+Demo password for all seeded accounts: `Dayflow@2026`
 
 ## 2. Attendance History
 
@@ -94,8 +96,9 @@ Create at least 3 salary revision records across different employees.
 Each revision should contain:
 
 - Employee
-- ctc_annual `- `effective_from
-- effective_to``
+- `ctc_annual`
+- `effective_from`
+- `effective_to`
 - Previous salary is represented by the previous version row, not by a separate "previous salary" field.
 - When a revision is seeded, close the old salary version and create the new version in the same transaction so version history is preserved and active date ranges do not overlap.
 

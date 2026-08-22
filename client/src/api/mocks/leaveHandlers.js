@@ -1,7 +1,7 @@
 import { ApiError } from '../ApiError.js';
 import {
   store, nextId, requireActor, requireRole, requireSelfOrRole,
-  businessDaysBetween, balanceFor, paginate, money, idStr,
+  businessDaysBetween, balanceFor, paginate, money, idStr, emitStreamEvent,
 } from './state.js';
 
 // Internal store rows stay plain numbers/camelCase for easy business-logic math (balance
@@ -158,6 +158,12 @@ export const leaveHandlers = [
         body: `${actor.fullName} requested ${dayCount} day(s) of ${lt.name.toLowerCase()}.`,
         link: '/admin/approvals', readAt: null, createdAt: new Date().toISOString(),
       }));
+      // §5.1: "then: SSE broadcast 'approval:new'" — payload shape from docs/api-shapes.md.
+      emitStreamEvent('approval:new', {
+        requestId: idStr(request.id), employeeId: idStr(request.employeeId), leaveCode: request.leaveCode,
+        startDate: request.startDate, endDate: request.endDate, dayCount: money(request.dayCount),
+        approverRole: request.steps[0].approverRole,
+      });
       return {
         request: toWireRequestRow(request),
         approvalSteps: request.steps.map((s) => ({ id: idStr(s.id), step_no: s.stepNo, approver_role: s.approverRole, status: s.status })),

@@ -118,6 +118,21 @@ export function idStr(n) {
   return n === null || n === undefined ? null : String(n);
 }
 
+// --- mock stand-in for the real SSE stream (GET /api/stream) --------------------------
+// Handlers call emitStreamEvent() right after a mutation that the real backend would
+// broadcast (§5.1's "then: SSE broadcast 'approval:new'", and the decide/punch endpoints
+// per docs/api-shapes.md). client/src/context/StreamContext.jsx subscribes to this when
+// VITE_USE_MOCKS is true, so the same event names and payload shapes reach the same
+// dispatch code as a real EventSource would — the UI can't tell the difference.
+const streamListeners = new Set();
+export function emitStreamEvent(event, data) {
+  streamListeners.forEach((fn) => fn(event, data));
+}
+export function subscribeMockStream(fn) {
+  streamListeners.add(fn);
+  return () => streamListeners.delete(fn);
+}
+
 // path like '/employees/:id' vs actual '/employees/7' -> { id: '7' } | null
 export function matchPath(pattern, path) {
   const patternParts = pattern.split('/').filter(Boolean);

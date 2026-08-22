@@ -1,5 +1,5 @@
 import { ApiError } from '../ApiError.js';
-import { store, nextId, requireActor, requireRole, paginate, money, idStr } from './state.js';
+import { store, nextId, requireActor, requireRole, paginate, money, idStr, emitStreamEvent } from './state.js';
 
 function toWireQueueRow(step, request) {
   const employee = store.employees.find((e) => e.id === request.employeeId);
@@ -114,6 +114,16 @@ export const approvalHandlers = [
           link: '/leave/history', readAt: null, createdAt: step.actedAt,
         });
       }
+
+      // docs/api-shapes.md's SSE payload for approval:decided — currentStep is null once
+      // the request is terminal (APPROVED/REJECTED), consumed is null unless this decide
+      // just wrote the CONSUMED row.
+      emitStreamEvent('approval:decided', {
+        requestId: idStr(request.id), stepNo: step.stepNo, action,
+        decidedBy: idStr(actor.userId), requestStatus: request.status,
+        currentStep: request.status === 'PENDING' ? request.currentStep : null,
+        leaveCode: request.leaveCode, consumed: ledgerEntry ? ledgerEntry.delta : null,
+      });
 
       return {
         step: {

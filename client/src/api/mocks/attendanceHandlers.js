@@ -1,5 +1,5 @@
 import { ApiError } from '../ApiError.js';
-import { store, requireActor, requireRole, idStr } from './state.js';
+import { store, requireActor, requireRole, idStr, emitStreamEvent } from './state.js';
 
 function inRange(row, from, to) {
   return (!from || row.workDate >= from) && (!to || row.workDate <= to);
@@ -63,10 +63,24 @@ export const attendanceHandlers = [
       }
       if (direction === 'IN' && !day.firstIn) day.firstIn = now.toISOString();
       if (direction === 'OUT') day.lastOut = now.toISOString();
-      return {
+
+      // Keep the live presence board (GET /attendance/today) in sync — otherwise a punch
+      // updates attendanceDays but the "today" screen never sees it, live or not.
+      let presence = store.todayPresence.find((p) => p.employeeId === actor.id);
+      if (!presence) {
+        presence = { employeeId: actor.id, employeeName: actor.fullName, departmentName: null, status: day.status, firstIn: null, lastOut: null };
+        store.todayPresence.push(presence);
+      }
+      presence.status = day.status;
+      presence.firstIn = day.firstIn;
+      presence.lastOut = day.lastOut;
+
+      const payload = {
         employeeId: idStr(actor.id), direction, punchAt: now.toISOString(),
         workDate: day.workDate, status: day.status, workedMinutes: day.workedMinutes,
       };
+      emitStreamEvent('attendance:punch', payload);
+      return payload;
     },
   },
   {

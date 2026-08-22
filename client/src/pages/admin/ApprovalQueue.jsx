@@ -1,13 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api } from '../../api/client.js';
 import Table from '../../components/Table.jsx';
 import FormField from '../../components/FormField.jsx';
 import Button from '../../components/Button.jsx';
 import { useToast } from '../../components/Toast.jsx';
+import { useStream } from '../../context/StreamContext.jsx';
+import { useStreamEvent } from '../../context/useStreamEvent.js';
 import DecisionModal from './DecisionModal.jsx';
 
 export default function ApprovalQueue() {
   const { showToast } = useToast();
+  const { resetApprovalBellCount } = useStream();
   const [queue, setQueue] = useState([]);
   const [loading, setLoading] = useState(true);
   const [leaveTypes, setLeaveTypes] = useState([]);
@@ -24,15 +27,24 @@ export default function ApprovalQueue() {
     api.get('/leave/types').then((res) => setLeaveTypes(Array.isArray(res) ? res : [])).catch(() => setLeaveTypes([]));
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
+  // Visiting the queue is treated as having seen the new requests it bumped the bell for.
+  useEffect(() => { resetApprovalBellCount(); }, [resetApprovalBellCount]);
+
+  const loadQueue = useCallback(() => {
     setLoading(true);
-    api.get('/approvals/queue', { leaveCode: typeFilter || undefined })
-      .then((res) => { if (!cancelled) setQueue(res?.data ?? []); })
-      .catch(() => { if (!cancelled) setQueue([]); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+    return api.get('/approvals/queue', { leaveCode: typeFilter || undefined })
+      .then((res) => setQueue(res?.data ?? []))
+      .catch(() => setQueue([]))
+      .finally(() => setLoading(false));
   }, [typeFilter]);
+
+  useEffect(() => { loadQueue(); }, [loadQueue]);
+
+  // approval:new — someone just applied for leave the caller can decide on.
+  // approval:decided — someone else (another tab, another approver) decided a step first;
+  // the row needs to disappear even if it wasn't this tab's optimistic update that did it.
+  useStreamEvent('approval:new', loadQueue);
+  useStreamEvent('approval:decided', loadQueue);
 
   function typeName(code) {
     return leaveTypes.find((t) => t.code === code)?.name ?? code;

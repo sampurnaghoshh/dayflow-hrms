@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.jsx';
 import { api } from '../api/client.js';
 import { useAdminEmployee } from '../context/AdminEmployeeContext.jsx';
+import { useStream } from '../context/StreamContext.jsx';
 import { adminNavItems } from './navConfig.js';
 
 const linkClasses = ({ isActive }) =>
@@ -42,6 +43,7 @@ function EmployeeSwitcher() {
 
 export default function AdminLayout() {
   const { user, signOut } = useAuth();
+  const { approvalBellCount } = useStream();
 
   return (
     <div className="flex min-h-screen bg-bg">
@@ -67,9 +69,18 @@ export default function AdminLayout() {
             >
               My workspace
             </Link>
-            <button type="button" aria-label="Notifications" className="rounded-full p-2 text-text hover:bg-surface-alt">
+            <Link
+              to="/admin/approvals"
+              aria-label={approvalBellCount > 0 ? `${approvalBellCount} new approval request${approvalBellCount === 1 ? '' : 's'}` : 'Notifications'}
+              className="relative rounded-full p-2 text-text hover:bg-surface-alt"
+            >
               🔔
-            </button>
+              {approvalBellCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-danger text-xs font-semibold text-text-inverse">
+                  {approvalBellCount > 9 ? '9+' : approvalBellCount}
+                </span>
+              )}
+            </Link>
             <button
               type="button"
               onClick={signOut}

@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '../../api/client.js';
 import Table from '../../components/Table.jsx';
 import Badge from '../../components/Badge.jsx';
 import Skeleton from '../../components/Skeleton.jsx';
 import { useAdminEmployee } from '../../context/AdminEmployeeContext.jsx';
+import { useStreamEvent } from '../../context/useStreamEvent.js';
 
 function mondayOf(date) {
   const d = new Date(date);
@@ -30,14 +31,19 @@ export default function AttendanceBoard() {
 
   const dates = useMemo(() => weekDates(mondayOf(new Date())), []);
 
-  useEffect(() => {
-    let cancelled = false;
-    api.get('/attendance/today')
-      .then((res) => { if (!cancelled) setToday(res?.data ?? []); })
-      .catch(() => { if (!cancelled) setToday([]); })
-      .finally(() => { if (!cancelled) setTodayLoading(false); });
-    return () => { cancelled = true; };
+  const loadToday = useCallback(() => {
+    setTodayLoading(true);
+    return api.get('/attendance/today')
+      .then((res) => setToday(res?.data ?? []))
+      .catch(() => setToday([]))
+      .finally(() => setTodayLoading(false));
   }, []);
+
+  useEffect(() => { loadToday(); }, [loadToday]);
+
+  // Only fires while this screen is mounted — that's what makes "if it is on screen" true;
+  // an unmounted board just gets a fresh fetch on its next mount instead.
+  useStreamEvent('attendance:punch', loadToday);
 
   useEffect(() => {
     let cancelled = false;

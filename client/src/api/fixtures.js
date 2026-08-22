@@ -181,9 +181,13 @@ function buildAttendanceDays(employeeId, pattern) {
   });
 }
 
+// One employee per department (ENG=1 Ava, PPL=3 Sofia, FIN=5 Priya, DES=2 Marcus) so the
+// admin dashboard's attendance-by-department chart has all four bars, not just two.
 export const attendanceDays = [
   ...buildAttendanceDays(1, ['PRESENT', 'PRESENT', 'PRESENT', 'ABSENT', 'PRESENT', 'PRESENT', 'PRESENT', 'HALF_DAY', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT']),
   ...buildAttendanceDays(2, ['PRESENT', 'PRESENT', 'HALF_DAY', 'PRESENT', 'ABSENT', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT', 'ABSENT', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT']),
+  ...buildAttendanceDays(3, ['PRESENT', 'PRESENT', 'PRESENT', 'PRESENT', 'HALF_DAY', 'PRESENT', 'PRESENT', 'ABSENT', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT']),
+  ...buildAttendanceDays(5, ['PRESENT', 'ABSENT', 'PRESENT', 'PRESENT', 'PRESENT', 'PRESENT', 'HALF_DAY', 'PRESENT', 'PRESENT', 'PRESENT', 'ABSENT', 'PRESENT', 'PRESENT', 'PRESENT']),
 ];
 
 export const todayPresence = [

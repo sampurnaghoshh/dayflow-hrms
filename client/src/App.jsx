@@ -4,6 +4,7 @@ import { AuthProvider } from './auth/AuthContext.jsx';
 import ProtectedRoute from './auth/ProtectedRoute.jsx';
 import RoleRoute from './auth/RoleRoute.jsx';
 import { AdminEmployeeProvider } from './context/AdminEmployeeContext.jsx';
+import { StreamProvider } from './context/StreamContext.jsx';
 import EmployeeLayout from './layouts/EmployeeLayout.jsx';
 import AdminLayout from './layouts/AdminLayout.jsx';
 import ComponentKit from './pages/dev/ComponentKit.jsx';
@@ -45,40 +46,42 @@ export default function App() {
     <BrowserRouter>
       <ToastProvider>
         <AuthProvider>
-          <Routes>
-            {/* TEMPORARY — remove once every component in the kit has been used for real. */}
-            <Route path="/kit" element={<ComponentKit />} />
+          <StreamProvider>
+            <Routes>
+              {/* TEMPORARY — remove once every component in the kit has been used for real. */}
+              <Route path="/kit" element={<ComponentKit />} />
 
-            <Route path="/sign-in" element={<SignIn />} />
-            <Route path="/sign-up" element={<SignUp />} />
-            <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/sign-in" element={<SignIn />} />
+              <Route path="/sign-up" element={<SignUp />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
 
-            <Route element={<ProtectedRoute />}>
-              <Route element={<RoleRoute roles={['EMPLOYEE', 'HR', 'ADMIN']} />}>
-                <Route element={<EmployeeLayout />}>
-                  <Route path="/" element={<EmployeeDashboard />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/attendance" element={<Placeholder title="Attendance" />} />
-                  <Route path="/leave/apply" element={<LeaveApply />} />
-                  <Route path="/leave/history" element={<LeaveHistory />} />
-                  <Route path="/payslips" element={<Payslips />} />
+              <Route element={<ProtectedRoute />}>
+                <Route element={<RoleRoute roles={['EMPLOYEE', 'HR', 'ADMIN']} />}>
+                  <Route element={<EmployeeLayout />}>
+                    <Route path="/" element={<EmployeeDashboard />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/attendance" element={<Placeholder title="Attendance" />} />
+                    <Route path="/leave/apply" element={<LeaveApply />} />
+                    <Route path="/leave/history" element={<LeaveHistory />} />
+                    <Route path="/payslips" element={<Payslips />} />
+                  </Route>
+                </Route>
+
+                <Route element={<RoleRoute roles={['HR', 'ADMIN']} />}>
+                  <Route element={<AdminLayoutWithContext />}>
+                    <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/admin/employees" element={<Employees />} />
+                    <Route path="/admin/employees/:id" element={<EmployeeDetail />} />
+                    <Route path="/admin/approvals" element={<ApprovalQueue />} />
+                    <Route path="/admin/attendance" element={<AttendanceBoard />} />
+                    <Route path="/admin/payroll" element={<PayrollAdmin />} />
+                  </Route>
                 </Route>
               </Route>
 
-              <Route element={<RoleRoute roles={['HR', 'ADMIN']} />}>
-                <Route element={<AdminLayoutWithContext />}>
-                  <Route path="/admin" element={<AdminDashboard />} />
-                  <Route path="/admin/employees" element={<Employees />} />
-                  <Route path="/admin/employees/:id" element={<EmployeeDetail />} />
-                  <Route path="/admin/approvals" element={<ApprovalQueue />} />
-                  <Route path="/admin/attendance" element={<AttendanceBoard />} />
-                  <Route path="/admin/payroll" element={<PayrollAdmin />} />
-                </Route>
-              </Route>
-            </Route>
-
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </StreamProvider>
         </AuthProvider>
       </ToastProvider>
     </BrowserRouter>

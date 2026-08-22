@@ -6,6 +6,7 @@ import Table from '../../components/Table.jsx';
 import Badge from '../../components/Badge.jsx';
 import Button from '../../components/Button.jsx';
 import Skeleton from '../../components/Skeleton.jsx';
+import { useStreamEvent } from '../../context/useStreamEvent.js';
 import LeaveRequestDetail from './LeaveRequestDetail.jsx';
 
 // GET /leave/requests (the list) does NOT include the approval timeline — confirmed against
@@ -68,6 +69,14 @@ export default function LeaveHistory() {
       return next;
     });
   }
+
+  // A step on one of this employee's requests was just decided (by an approver, in another
+  // tab or the real backend) — refresh the list, and the open detail panel too if it's the
+  // request that changed.
+  useStreamEvent('approval:decided', (event) => {
+    loadRequests();
+    if (event.requestId === selectedId) loadDetail(selectedId);
+  });
 
   // Refetches the list, the balances, and the open detail so the reversal from a cancelled,
   // already-approved request is visible immediately, without needing to leave this page.

@@ -29,6 +29,14 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(4000),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   UPLOAD_DIR: z.string().min(1).default('./server/uploads'),
+  // The single browser origin allowed to send credentialed requests (§8).
+  // Never a wildcard: '*' is illegal with credentials:true and would defeat SameSite.
+  CLIENT_ORIGIN: z
+    .string()
+    .min(1)
+    .default('http://localhost:5173')
+    .refine((v) => !v.includes('*'), 'must be an exact origin, not a wildcard')
+    .refine((v) => !v.endsWith('/'), 'must not have a trailing slash'),
 });
 
 const parsed = envSchema.safeParse(process.env);

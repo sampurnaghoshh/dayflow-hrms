@@ -41,25 +41,34 @@ const ADVISORY_LOCK_ID = 4915623;
 
 const sha256 = (text) => createHash('sha256').update(text).digest('hex');
 
-async function connectWithRetry(client, attempts = 15, delayMs = 1000) {
+/**
+ * Waits for postgres to accept connections, which it does not do immediately after
+ * `docker compose up`.
+ *
+ * A NEW Client is built for every attempt on purpose: pg refuses to reconnect a
+ * client whose connect() has already failed ("Client has already been connected"),
+ * so retrying on one instance turns a recoverable "not ready yet" into a hard stop.
+ */
+async function connectWithRetry(connectionString, attempts = 20, delayMs = 1000) {
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    const client = new pg.Client({ connectionString });
     try {
       await client.connect();
-      return;
+      if (attempt > 1) process.stdout.write('\n');
+      return client;
     } catch (err) {
-      const isLast = attempt === attempts;
-      if (isLast) throw err;
+      await client.end().catch(() => {});
+      if (attempt === attempts) throw err;
       if (attempt === 1) process.stdout.write('waiting for postgres');
       process.stdout.write('.');
       await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
   }
+  throw new Error('unreachable');
 }
 
 async function main() {
-  const client = new pg.Client({ connectionString: DATABASE_URL });
-  await connectWithRetry(client);
-  process.stdout.write('\n');
+  const client = await connectWithRetry(DATABASE_URL);
 
   await client.query('SELECT pg_advisory_lock($1)', [ADVISORY_LOCK_ID]);
 

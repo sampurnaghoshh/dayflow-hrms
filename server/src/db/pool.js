@@ -9,6 +9,20 @@
 import pg from 'pg';
 import { env } from '../config/env.js';
 
+/*
+ * Return DATE as the plain 'YYYY-MM-DD' string postgres sent.
+ *
+ * By default node-postgres turns a DATE into a JavaScript Date at midnight LOCAL
+ * time. On a machine in IST that makes 2026-08-01 into 2026-07-31T18:30:00Z, so a
+ * joining date, a leave start_date or an attendance work_date silently moves a day
+ * earlier the moment it is serialised to JSON.
+ *
+ * A DATE has no timezone - it is a calendar day, not an instant - so the honest
+ * representation on this side of the wire is the string. TIMESTAMPTZ is left alone:
+ * those genuinely are instants and should stay Date objects.
+ */
+pg.types.setTypeParser(pg.types.builtins.DATE, (value) => value);
+
 export const pool = new pg.Pool({
   connectionString: env.DATABASE_URL,
   max: 10,

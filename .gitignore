@@ -141,3 +141,7 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Dayflow: uploaded files live on local disk, never in git (CLAUDE.md §2)
+server/uploads/*
+!server/uploads/.gitkeep

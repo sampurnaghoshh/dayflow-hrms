@@ -1,0 +1,25 @@
+# Postgres only. The app itself is never dockerised (CLAUDE.md §13).
+services:
+  postgres:
+    image: postgres:16
+    container_name: dayflow-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-dayflow}
+      POSTGRES_USER: ${POSTGRES_USER:-dayflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required - copy .env.example to .env}
+      # Deterministic collation so ORDER BY is identical on every machine.
+      POSTGRES_INITDB_ARGS: "--locale=C --encoding=UTF8"
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - dayflow_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dayflow} -d ${POSTGRES_DB:-dayflow}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+
+volumes:
+  dayflow_pgdata:

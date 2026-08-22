@@ -10,7 +10,7 @@ export default function DecisionModal({ target, comment, onCommentChange, error,
       {target && (
         <div className="flex flex-col gap-4">
           <p className="text-sm text-text-muted">
-            {target.step.employeeName} · {typeName(target.step.leaveCode)} · {target.step.startDate} – {target.step.endDate} ·{' '}
+            {target.step.fullName} · {typeName(target.step.leaveCode)} · {target.step.startDate} – {target.step.endDate} ·{' '}
             {target.step.dayCount} day{target.step.dayCount === 1 ? '' : 's'}
           </p>
           {target.step.remarks && <p className="text-sm text-text-muted">“{target.step.remarks}”</p>}

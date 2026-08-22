@@ -8,7 +8,9 @@ function formatDate(iso) {
 
 const CANCELLABLE = ['PENDING', 'APPROVED'];
 
-export default function LeaveRequestDetail({ request, typeName, onCancel, cancelling, cancelError }) {
+// `timeline` is separate from `request` because GET /leave/requests/:id returns them as two
+// keys, not `request.steps` (docs/api-shapes.md) — the list endpoint doesn't include it at all.
+export default function LeaveRequestDetail({ request, timeline, typeName, onCancel, cancelling, cancelError }) {
   return (
     <Card className="mt-2">
       <div className="flex items-start justify-between gap-2">
@@ -25,8 +27,8 @@ export default function LeaveRequestDetail({ request, typeName, onCancel, cancel
 
       <h3 className="mb-2 mt-4 text-sm font-semibold text-text">Approval timeline</h3>
       <ol className="flex flex-col gap-2">
-        {request.steps.map((step) => (
-          <li key={step.id} className="rounded-md border border-border p-3">
+        {timeline.map((step) => (
+          <li key={step.stepId} className="rounded-md border border-border p-3">
             <div className="flex items-center justify-between gap-2">
               <span className="text-sm font-medium text-text">Step {step.stepNo} · {step.approverRole}</span>
               <Badge status={step.status} />

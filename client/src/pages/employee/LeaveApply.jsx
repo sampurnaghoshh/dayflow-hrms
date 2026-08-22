@@ -40,9 +40,11 @@ export default function LeaveApply() {
     Promise.all([api.get('/leave/types'), api.get('/leave/balances')])
       .then(([typesRes, balancesRes]) => {
         if (cancelled) return;
-        const types = typesRes?.data ?? [];
+        // GET /leave/types returns a bare array (it's not a paginated list); GET /leave/balances
+        // wraps its rows as { employeeId, balances } — neither is { data: [...] } (docs/api-shapes.md).
+        const types = Array.isArray(typesRes) ? typesRes : [];
         setLeaveTypes(types);
-        setBalances(balancesRes?.data ?? []);
+        setBalances(balancesRes?.balances ?? []);
         setLeaveTypeId((prev) => prev || types[0]?.id || '');
       })
       .catch(() => { if (!cancelled) setError('Could not load leave types. Refresh to try again.'); })
@@ -82,7 +84,9 @@ export default function LeaveApply() {
         <Card className="mx-auto max-w-md text-center">
           <h1 className="mb-2 text-xl font-semibold text-text">Leave request submitted</h1>
           <p className="mb-6 text-sm text-text-muted">
-            Your {submitted.dayCount}-day {submitted.leaveCode.toLowerCase()} leave request is pending approval.
+            {/* POST /leave/requests doesn't echo the leave type name/code back — use what's
+                already selected client-side instead of assuming the response has it. */}
+            Your {submitted.dayCount}-day {(selectedType?.name ?? 'leave').toLowerCase()} request is pending approval.
           </p>
           <Button onClick={() => { setSubmitted(null); setStartDate(''); setEndDate(''); setRemarks(''); }}>
             Apply for another

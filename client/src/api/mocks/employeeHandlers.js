@@ -1,12 +1,33 @@
 import { ApiError } from '../ApiError.js';
-import { store, nextId, requireActor, requireRole, requireSelfOrRole, paginate } from './state.js';
+import { store, nextId, requireActor, requireRole, requireSelfOrRole, paginate, idStr } from './state.js';
 
+// Not in docs/api-shapes.md — extrapolated to match the same snake_case-row convention
+// confirmed for leave/attendance/payroll (CLAUDE.md §4's `employees` columns are snake_case).
 const SELF_EDITABLE_FIELDS = ['phone', 'address'];
 
 function findEmployeeOr404(id) {
   const employee = store.employees.find((e) => e.id === Number(id));
   if (!employee) throw new ApiError('NOT_FOUND', 'Not found.', [], 404);
   return employee;
+}
+
+function toWireEmployee(e) {
+  const dept = store.departments.find((d) => d.id === e.departmentId) ?? null;
+  return {
+    id: idStr(e.id), employee_code: e.employeeCode, full_name: e.fullName, email: e.email,
+    role: e.role, status: e.status, department_id: idStr(e.departmentId),
+    department: dept ? { id: idStr(dept.id), code: dept.code, name: dept.name } : null,
+    manager_id: idStr(e.managerId), designation: e.designation, date_of_joining: e.dateOfJoining,
+    phone: e.phone, address: e.address, profile_photo_path: e.profilePhotoPath,
+  };
+}
+
+function toWireDocument(d) {
+  return {
+    id: idStr(d.id), employee_id: idStr(d.employeeId), doc_type: d.docType,
+    original_name: d.originalName, mime_type: d.mimeType, size_bytes: d.sizeBytes,
+    uploaded_at: d.uploadedAt,
+  };
 }
 
 export const employeeHandlers = [
@@ -21,7 +42,8 @@ export const employeeHandlers = [
         rows = rows.filter((e) => e.fullName.toLowerCase().includes(q) || e.employeeCode.toLowerCase().includes(q) || e.email.toLowerCase().includes(q));
       }
       if (query?.departmentId) rows = rows.filter((e) => e.departmentId === Number(query.departmentId));
-      return paginate(rows, query?.page, query?.pageSize ?? 20);
+      const { data, page, pageSize, total } = paginate(rows, query?.page, query?.pageSize ?? 20);
+      return { data: data.map(toWireEmployee), page, pageSize, total };
     },
   },
   {
@@ -30,10 +52,11 @@ export const employeeHandlers = [
       const actor = requireActor();
       requireSelfOrRole(actor, id, ['HR', 'ADMIN']);
       const employee = findEmployeeOr404(id);
+      const currentSalary = store.salaryVersions.find((s) => s.employeeId === employee.id && s.effectiveTo === null);
       return {
-        ...employee,
-        documents: store.employeeDocuments.filter((d) => d.employeeId === employee.id),
-        currentSalary: store.salaryVersions.find((s) => s.employeeId === employee.id && s.effectiveTo === null) ?? null,
+        ...toWireEmployee(employee),
+        documents: store.employeeDocuments.filter((d) => d.employeeId === employee.id).map(toWireDocument),
+        currentSalary: currentSalary ? { id: idStr(currentSalary.id), ctc_annual: String(currentSalary.ctcAnnual.toFixed(2)) } : null,
       };
     },
   },
@@ -52,7 +75,7 @@ export const employeeHandlers = [
         }
       }
       Object.assign(employee, body);
-      return { ...employee };
+      return toWireEmployee(employee);
     },
   },
   {
@@ -78,7 +101,7 @@ export const employeeHandlers = [
       const actor = requireActor();
       requireSelfOrRole(actor, id, ['HR', 'ADMIN']);
       findEmployeeOr404(id);
-      return { data: store.employeeDocuments.filter((d) => d.employeeId === Number(id)) };
+      return { data: store.employeeDocuments.filter((d) => d.employeeId === Number(id)).map(toWireDocument) };
     },
   },
   {
@@ -101,7 +124,7 @@ export const employeeHandlers = [
         uploadedAt: new Date().toISOString(),
       };
       store.employeeDocuments.push(doc);
-      return doc;
+      return toWireDocument(doc);
     },
   },
   {
@@ -111,7 +134,7 @@ export const employeeHandlers = [
       const doc = store.employeeDocuments.find((d) => d.id === Number(id));
       if (!doc) throw new ApiError('NOT_FOUND', 'Not found.', [], 404);
       requireSelfOrRole(actor, doc.employeeId, ['HR', 'ADMIN']);
-      return doc;
+      return toWireDocument(doc);
     },
   },
 ];

@@ -8,10 +8,9 @@ import Button from '../../components/Button.jsx';
 import Skeleton from '../../components/Skeleton.jsx';
 import LeaveRequestDetail from './LeaveRequestDetail.jsx';
 
-// NOTE: the mock's GET /leave/requests returns full request objects, including `steps` —
-// so the detail panel reads straight from the already-loaded row instead of a second fetch
-// against GET /leave/requests/:id. If the real API keeps the list lighter, swap this for
-// an on-demand detail fetch when a row is opened.
+// GET /leave/requests (the list) does NOT include the approval timeline — confirmed against
+// docs/api-shapes.md, and exactly the gap flagged when this page was first built. Opening a
+// row now fetches GET /leave/requests/:id, which returns { request, timeline }.
 export default function LeaveHistory() {
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
@@ -20,6 +19,8 @@ export default function LeaveHistory() {
   const [balancesLoading, setBalancesLoading] = useState(true);
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
+  const [detail, setDetail] = useState(null); // { request, timeline } for selectedId
+  const [detailLoading, setDetailLoading] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState('');
 
@@ -34,7 +35,7 @@ export default function LeaveHistory() {
   const loadBalances = useCallback(() => {
     setBalancesLoading(true);
     return api.get('/leave/balances')
-      .then((res) => setBalances(res?.data ?? []))
+      .then((res) => setBalances(res?.balances ?? []))
       .catch(() => setBalances([]))
       .finally(() => setBalancesLoading(false));
   }, []);
@@ -42,34 +43,47 @@ export default function LeaveHistory() {
   useEffect(() => {
     loadRequests();
     loadBalances();
-    api.get('/leave/types').then((res) => setLeaveTypes(res?.data ?? [])).catch(() => setLeaveTypes([]));
+    api.get('/leave/types').then((res) => setLeaveTypes(Array.isArray(res) ? res : [])).catch(() => setLeaveTypes([]));
   }, [loadRequests, loadBalances]);
 
   function typeName(code) {
     return leaveTypes.find((t) => t.code === code)?.name ?? code;
   }
 
-  function toggleSelected(id) {
-    setCancelError('');
-    setSelectedId((prev) => (prev === id ? null : id));
+  function loadDetail(id) {
+    setDetailLoading(true);
+    setDetail(null);
+    api.get(`/leave/requests/${id}`)
+      .then((res) => setDetail(res))
+      .catch((err) => setCancelError(err.message || 'Could not load this request.'))
+      .finally(() => setDetailLoading(false));
   }
 
-  // Refetches the list and the balances so the reversal from a cancelled, already-approved
-  // request is visible immediately, without needing to leave this page.
+  function toggleSelected(id) {
+    setCancelError('');
+    setSelectedId((prev) => {
+      const next = prev === id ? null : id;
+      if (next) loadDetail(next);
+      else setDetail(null);
+      return next;
+    });
+  }
+
+  // Refetches the list, the balances, and the open detail so the reversal from a cancelled,
+  // already-approved request is visible immediately, without needing to leave this page.
   async function handleCancel(id) {
     setCancelError('');
     setCancelling(true);
     try {
       await api.post(`/leave/requests/${id}/cancel`);
       await Promise.all([loadRequests(), loadBalances()]);
+      loadDetail(id);
     } catch (err) {
       setCancelError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setCancelling(false);
     }
   }
-
-  const selected = requests.find((r) => r.id === selectedId) ?? null;
 
   const columns = [
     { key: 'leaveCode', header: 'Type', render: (row) => typeName(row.leaveCode) },
@@ -110,11 +124,14 @@ export default function LeaveHistory() {
         emptyAction={<Button variant="secondary" onClick={() => navigate('/leave/apply')}>Apply for leave</Button>}
       />
 
-      {selected && (
+      {selectedId && detailLoading && <Skeleton className="h-48 w-full" />}
+
+      {selectedId && !detailLoading && detail && (
         <LeaveRequestDetail
-          request={selected}
+          request={detail.request}
+          timeline={detail.timeline}
           typeName={typeName}
-          onCancel={() => handleCancel(selected.id)}
+          onCancel={() => handleCancel(selectedId)}
           cancelling={cancelling}
           cancelError={cancelError}
         />

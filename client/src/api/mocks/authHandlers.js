@@ -1,16 +1,57 @@
 import { ApiError } from '../ApiError.js';
 import {
   store, nextId, setSession, clearSession, currentEmployee, requireActor,
-  issueVerifyToken, consumeVerifyToken,
+  issueVerifyToken, consumeVerifyToken, idStr,
 } from './state.js';
 
-function toMe(employee) {
-  const { userId, ...rest } = employee;
-  return rest;
+// Wire shapes for POST /auth/login and GET /auth/me come from docs/api-shapes.md — they are
+// NOT the same shape (that's the mismatch AuthContext.jsx has to handle). login's `user` is
+// flat with an `employeeId`; me's `user` has no employeeId but a separate nested `employee`
+// (with its own `department`), both nullable if the user has no employee row yet.
+function toLoginUser(employee) {
+  return {
+    id: idStr(employee.userId),
+    employeeCode: employee.employeeCode,
+    email: employee.email,
+    role: employee.role,
+    status: employee.status,
+    employeeId: idStr(employee.id),
+  };
+}
+
+function toMeUser(employee) {
+  return {
+    id: idStr(employee.userId),
+    employeeCode: employee.employeeCode,
+    email: employee.email,
+    role: employee.role,
+    status: employee.status,
+    emailVerifiedAt: employee.emailVerifiedAt,
+    lastLoginAt: employee.lastLoginAt,
+  };
+}
+
+// Nullable per docs/api-shapes.md (a user can in principle exist without an employee row
+// yet) — doesn't happen in this mock's data model since register always creates both.
+function toMeEmployee(employee) {
+  const dept = store.departments.find((d) => d.id === employee.departmentId) ?? null;
+  return {
+    id: idStr(employee.id),
+    fullName: employee.fullName,
+    designation: employee.designation,
+    dateOfJoining: employee.dateOfJoining,
+    phone: employee.phone,
+    address: employee.address,
+    profilePhotoPath: employee.profilePhotoPath,
+    managerId: idStr(employee.managerId),
+    department: dept ? { id: idStr(dept.id), code: dept.code, name: dept.name } : null,
+  };
 }
 
 export const authHandlers = [
   {
+    // Response shape isn't captured in docs/api-shapes.md (only login/me were) — this is a
+    // reasonable extrapolation of the same conventions, not verified ground truth.
     method: 'POST', pattern: '/auth/register',
     handler: (_params, { body }) => {
       const { employeeCode, email, password, role = 'EMPLOYEE' } = body ?? {};
@@ -26,14 +67,14 @@ export const authHandlers = [
         status: 'PENDING_VERIFICATION', departmentId: null, departmentName: null,
         managerId: null, managerName: null, designation: null,
         dateOfJoining: new Date().toISOString().slice(0, 10), phone: null, address: null,
-        profilePhotoPath: null,
+        profilePhotoPath: null, emailVerifiedAt: null, lastLoginAt: null,
       };
       store.employees.push(employee);
       store.mockCredentials.push({ email, password, userId });
       const token = issueVerifyToken(userId);
       // Anti-goal: no real email sending. The mock hands back the link directly so the UI
       // can show it; the real backend will need an equivalent stand-in until SMTP exists.
-      return { id: employee.id, employeeCode, email, status: employee.status, verificationUrl: `/verify-email?token=${token}` };
+      return { id: idStr(employee.id), employeeCode, email, status: employee.status, verificationUrl: `/verify-email?token=${token}` };
     },
   },
   {
@@ -44,6 +85,7 @@ export const authHandlers = [
       const employee = store.employees.find((e) => e.userId === userId);
       if (!employee) throw new ApiError('INVALID_TOKEN', 'This verification link is invalid or has expired.', [], 400);
       employee.status = 'ACTIVE';
+      employee.emailVerifiedAt = new Date().toISOString();
       return { status: employee.status };
     },
   },
@@ -63,7 +105,8 @@ export const authHandlers = [
         throw new ApiError('ACCOUNT_DISABLED', 'This account has been disabled. Contact HR.', [], 403);
       }
       setSession(cred.userId);
-      return toMe(employee);
+      employee.lastLoginAt = new Date().toISOString();
+      return { user: toLoginUser(employee) };
     },
   },
   {
@@ -75,6 +118,9 @@ export const authHandlers = [
   },
   {
     method: 'GET', pattern: '/auth/me',
-    handler: () => toMe(requireActor()),
+    handler: () => {
+      const employee = requireActor();
+      return { user: toMeUser(employee), employee: toMeEmployee(employee) };
+    },
   },
 ];

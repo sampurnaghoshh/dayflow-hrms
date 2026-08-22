@@ -1,5 +1,25 @@
 import { ApiError } from '../ApiError.js';
-import { store, nextId, requireActor, requireRole } from './state.js';
+import { store, nextId, requireActor, requireRole, paginate, money, idStr } from './state.js';
+
+function toWireQueueRow(step, request) {
+  const employee = store.employees.find((e) => e.id === request.employeeId);
+  return {
+    step_id: idStr(step.id), request_id: idStr(request.id), step_no: step.stepNo,
+    approver_role: step.approverRole, employee_id: idStr(request.employeeId),
+    full_name: employee?.fullName ?? null, department_id: idStr(employee?.departmentId),
+    leave_code: request.leaveCode, start_date: request.startDate, end_date: request.endDate,
+    day_count: money(request.dayCount), remarks: request.remarks, created_at: request.createdAt,
+  };
+}
+
+function toWireLedgerEntry(entry) {
+  if (!entry) return null;
+  return {
+    id: idStr(entry.id), employee_id: idStr(entry.employeeId), leave_type_id: idStr(entry.leaveTypeId),
+    delta: money(entry.delta), reason: entry.reason, ref_request_id: idStr(entry.refRequestId),
+    created_at: entry.createdAt,
+  };
+}
 
 export const approvalHandlers = [
   {
@@ -11,17 +31,19 @@ export const approvalHandlers = [
         .filter((r) => r.status === 'PENDING')
         .flatMap((r) => {
           const step = r.steps.find((s) => s.stepNo === r.currentStep && s.status === 'PENDING');
-          return step && step.approverRole === actor.role
-            ? [{ stepId: step.id, requestId: r.id, stepNo: step.stepNo, approverRole: step.approverRole,
-                employeeId: r.employeeId, employeeName: r.employeeName, leaveCode: r.leaveCode,
-                startDate: r.startDate, endDate: r.endDate, dayCount: r.dayCount, remarks: r.remarks, createdAt: r.createdAt }]
-            : [];
+          return step && step.approverRole === actor.role ? [{ step, request: r }] : [];
         });
-      if (query?.leaveCode) rows = rows.filter((r) => r.leaveCode === query.leaveCode);
-      return { data: rows };
+      if (query?.leaveCode) rows = rows.filter(({ request }) => request.leaveCode === query.leaveCode);
+      const { data, page, pageSize, total } = paginate(rows, query?.page, query?.pageSize);
+      return { data: data.map(({ step, request }) => toWireQueueRow(step, request)), page, pageSize, total };
     },
   },
   {
+    // Wire shape (step/requestId/ledgerEntry/attendanceDays/skippedSteps/request/
+    // employeeUserId/leaveCode) is from docs/api-shapes.md, including the real conflict
+    // code — STEP_ALREADY_DECIDED, not the REQUEST_ALREADY_DECIDED this mock invented
+    // before Sampurna's capture. The queue's toast text ("Someone else already decided
+    // this request") stays a fixed UX string either way — only the code it matches changed.
     method: 'POST', pattern: '/approvals/steps/:stepId/decide',
     handler: ({ stepId }, { body }) => {
       const actor = requireActor();
@@ -34,20 +56,32 @@ export const approvalHandlers = [
       // §5.2 concurrency showpiece: the real backend does this with `SELECT ... FOR UPDATE`.
       // The mock has no lock, but the same check catches a double-decide from two tabs.
       if (request.status !== 'PENDING' || step.status !== 'PENDING' || request.currentStep !== step.stepNo) {
-        throw new ApiError('REQUEST_ALREADY_DECIDED', 'Someone else already decided this request.', [], 409);
+        const decider = request.steps.find((s) => s.status !== 'PENDING' && s.stepNo === step.stepNo);
+        throw new ApiError(
+          'STEP_ALREADY_DECIDED',
+          `${decider?.approverName ?? 'Someone'} already ${(decider?.status ?? 'decided').toLowerCase()} this step.`,
+          [{ field: 'stepId', issue: decider?.actedAt ? `Decided at ${decider.actedAt}` : undefined }],
+          409,
+        );
       }
       if (action === 'REJECT' && !comment) {
         throw new ApiError('VALIDATION_ERROR', 'Add a comment explaining the rejection.', [{ field: 'comment', issue: 'Required when rejecting.' }], 422);
       }
 
+      step.approverUserId = actor.userId;
       step.approverName = actor.fullName;
       step.comment = comment ?? null;
       step.actedAt = new Date().toISOString();
 
+      let ledgerEntry = null;
+      let skippedSteps = 0;
       if (action === 'REJECT') {
         step.status = 'REJECTED';
         request.status = 'REJECTED';
         request.decidedAt = step.actedAt;
+        request.steps.forEach((s) => {
+          if (s.id !== step.id && s.status === 'PENDING') { s.status = 'SKIPPED'; skippedSteps += 1; }
+        });
       } else {
         step.status = 'APPROVED';
         const isLastStep = request.currentStep === request.steps.length;
@@ -56,13 +90,15 @@ export const approvalHandlers = [
           request.decidedAt = step.actedAt;
           const leaveType = store.leaveTypes.find((t) => t.id === request.leaveTypeId);
           if (leaveType?.isPaid) {
-            store.leaveLedger.unshift({
+            const entry = {
               id: nextId('ledger'), employeeId: request.employeeId, leaveTypeId: request.leaveTypeId,
               delta: -request.dayCount, reason: 'CONSUMED', refRequestId: request.id, note: null,
-              createdAt: step.actedAt, runningBalance: null,
-            });
+              createdAt: step.actedAt,
+            };
+            store.leaveLedger.unshift(entry);
             const balance = store.leaveBalances.find((b) => b.employeeId === request.employeeId && b.leaveTypeId === request.leaveTypeId);
             if (balance) balance.balance -= request.dayCount;
+            ledgerEntry = toWireLedgerEntry(entry);
           }
         } else {
           request.currentStep += 1;
@@ -78,7 +114,20 @@ export const approvalHandlers = [
           link: '/leave/history', readAt: null, createdAt: step.actedAt,
         });
       }
-      return request;
+
+      return {
+        step: {
+          id: idStr(step.id), step_no: step.stepNo, status: step.status,
+          approver_user_id: idStr(step.approverUserId), comment: step.comment, acted_at: step.actedAt,
+        },
+        requestId: idStr(request.id),
+        ledgerEntry,
+        attendanceDays: 0,
+        skippedSteps,
+        request: { id: idStr(request.id), status: request.status, current_step: request.currentStep },
+        employeeUserId: idStr(employee?.userId ?? null),
+        leaveCode: request.leaveCode,
+      };
     },
   },
 ];

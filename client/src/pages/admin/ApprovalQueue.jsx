@@ -20,7 +20,8 @@ export default function ApprovalQueue() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    api.get('/leave/types').then((res) => setLeaveTypes(res?.data ?? [])).catch(() => setLeaveTypes([]));
+    // GET /leave/types returns a bare array, not { data: [...] } (docs/api-shapes.md).
+    api.get('/leave/types').then((res) => setLeaveTypes(Array.isArray(res) ? res : [])).catch(() => setLeaveTypes([]));
   }, []);
 
   useEffect(() => {
@@ -60,8 +61,11 @@ export default function ApprovalQueue() {
       showToast(action === 'APPROVE' ? 'Approved.' : 'Rejected.', 'success');
     } catch (err) {
       setQueue(snapshot);
+      // Real code is STEP_ALREADY_DECIDED (docs/api-shapes.md) — this mock had invented
+      // REQUEST_ALREADY_DECIDED before that was captured. The toast text stays a fixed UX
+      // string regardless of the server's own (more detailed) message for this case.
       showToast(
-        err.code === 'REQUEST_ALREADY_DECIDED'
+        err.code === 'STEP_ALREADY_DECIDED'
           ? 'Someone else already decided this request.'
           : (err.message || 'Something went wrong. Please try again.'),
         'danger',
@@ -71,10 +75,10 @@ export default function ApprovalQueue() {
     }
   }
 
-  const visibleRows = queue.filter((r) => r.employeeName.toLowerCase().includes(search.trim().toLowerCase()));
+  const visibleRows = queue.filter((r) => r.fullName.toLowerCase().includes(search.trim().toLowerCase()));
 
   const columns = [
-    { key: 'employeeName', header: 'Employee' },
+    { key: 'fullName', header: 'Employee' },
     { key: 'leaveCode', header: 'Leave type', render: (row) => typeName(row.leaveCode) },
     { key: 'dates', header: 'Dates', render: (row) => `${row.startDate} – ${row.endDate}` },
     { key: 'dayCount', header: 'Days' },

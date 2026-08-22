@@ -36,7 +36,7 @@ export const employees = [
     departmentId: 1, departmentName: 'Engineering', managerId: 4, managerName: 'Daniel Reyes',
     designation: 'Software Engineer', dateOfJoining: '2023-03-14',
     phone: '+1 415 555 0134', address: '221 Market St, San Francisco, CA',
-    profilePhotoPath: null,
+    profilePhotoPath: null, emailVerifiedAt: '2023-03-14T09:00:00Z', lastLoginAt: null,
   },
   {
     id: 2, userId: 2, employeeCode: 'DF-1002', fullName: 'Marcus Lee',
@@ -44,7 +44,7 @@ export const employees = [
     departmentId: 3, departmentName: 'Sales', managerId: 5, managerName: 'Priya Nair',
     designation: 'Account Executive', dateOfJoining: '2022-07-01',
     phone: '+1 415 555 0177', address: '88 Mission St, San Francisco, CA',
-    profilePhotoPath: null,
+    profilePhotoPath: null, emailVerifiedAt: '2022-07-01T09:00:00Z', lastLoginAt: null,
   },
   {
     id: 3, userId: 3, employeeCode: 'DF-1003', fullName: 'Sofia Garcia',
@@ -52,7 +52,7 @@ export const employees = [
     departmentId: 2, departmentName: 'People Ops', managerId: null, managerName: null,
     designation: 'HR Business Partner', dateOfJoining: '2021-01-11',
     phone: '+1 415 555 0199', address: '500 Howard St, San Francisco, CA',
-    profilePhotoPath: null,
+    profilePhotoPath: null, emailVerifiedAt: '2021-01-11T09:00:00Z', lastLoginAt: null,
   },
   {
     id: 4, userId: 4, employeeCode: 'DF-1004', fullName: 'Daniel Reyes',
@@ -60,7 +60,7 @@ export const employees = [
     departmentId: 1, departmentName: 'Engineering', managerId: null, managerName: null,
     designation: 'Engineering Director', dateOfJoining: '2020-05-20',
     phone: '+1 415 555 0111', address: '1 Front St, San Francisco, CA',
-    profilePhotoPath: null,
+    profilePhotoPath: null, emailVerifiedAt: '2020-05-20T09:00:00Z', lastLoginAt: null,
   },
   {
     id: 5, userId: 5, employeeCode: 'DF-1005', fullName: 'Priya Nair',
@@ -68,7 +68,7 @@ export const employees = [
     departmentId: 3, departmentName: 'Sales', managerId: null, managerName: null,
     designation: 'Sales Manager', dateOfJoining: '2021-09-02',
     phone: '+1 415 555 0155', address: '45 2nd St, San Francisco, CA',
-    profilePhotoPath: null,
+    profilePhotoPath: null, emailVerifiedAt: '2021-09-02T09:00:00Z', lastLoginAt: null,
   },
   {
     id: 6, userId: 6, employeeCode: 'DF-1006', fullName: 'Noah Kim',
@@ -76,6 +76,7 @@ export const employees = [
     departmentId: 1, departmentName: 'Engineering', managerId: 4, managerName: 'Daniel Reyes',
     designation: 'Junior Developer', dateOfJoining: '2026-08-10',
     phone: null, address: null, profilePhotoPath: null,
+    emailVerifiedAt: null, lastLoginAt: null,
   },
 ];
 

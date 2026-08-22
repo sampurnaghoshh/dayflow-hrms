@@ -28,7 +28,8 @@ export default function Dashboard() {
     let cancelled = false;
     api
       .get('/leave/balances')
-      .then((res) => { if (!cancelled) setBalances(res?.data ?? []); })
+      // { employeeId, balances: [...] }, not { data: [...] } (docs/api-shapes.md).
+      .then((res) => { if (!cancelled) setBalances(res?.balances ?? []); })
       .catch(() => { if (!cancelled) setBalances([]); })
       .finally(() => { if (!cancelled) setBalancesLoading(false); });
     return () => { cancelled = true; };

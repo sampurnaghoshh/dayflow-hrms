@@ -4,6 +4,7 @@ import * as fixtures from '../fixtures.js';
 // Deep-clone the fixtures once per tab so handlers can freely mutate "the database"
 // without polluting the imported module (which would leak across hot reloads).
 export const store = JSON.parse(JSON.stringify({
+  departments: fixtures.departments,
   employees: fixtures.employees,
   mockCredentials: fixtures.mockCredentials,
   leaveTypes: fixtures.leaveTypes,
@@ -102,6 +103,19 @@ export function businessDaysBetween(startDate, endDate) {
 export function balanceFor(employeeId, leaveTypeId) {
   const row = store.leaveBalances.find((b) => b.employeeId === employeeId && b.leaveTypeId === leaveTypeId);
   return row?.balance ?? 0;
+}
+
+// --- wire-shape helpers ----------------------------------------------------------------
+// The internal store keeps numbers (so business logic — balance math, day counts — stays
+// simple arithmetic). The real API stringifies every BIGINT id and NUMERIC money/day figure
+// (docs/api-shapes.md, node-postgres preserves precision this way — CLAUDE.md §1.9/§4).
+// Handlers call these when building the object they return, so the mock's wire format is
+// byte-identical to the real server; client.js's normalize() converts it straight back.
+export function money(n) {
+  return Number(n).toFixed(2);
+}
+export function idStr(n) {
+  return n === null || n === undefined ? null : String(n);
 }
 
 // path like '/employees/:id' vs actual '/employees/7' -> { id: '7' } | null

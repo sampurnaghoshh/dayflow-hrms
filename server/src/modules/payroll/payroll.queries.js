@@ -6,16 +6,22 @@
  * floats would be wrong in the last paisa, and wrong differently on different machines.
  */
 
-/**
- * The pro-rating rule, written once and reused by both payslip statements below so a
- * line item can never disagree with the total it is supposed to explain.
+/*
+ * THE PRO-RATING RULE
+ *
+ *   ROUND(sc.monthly_amount * <payable>::numeric / NULLIF(<working>, 0)::numeric, 2)
+ *
+ * It appears literally in insertPayslip() and insertPayslipLineItems() below, and the two
+ * copies MUST stay identical - a line item that disagreed with the total it explains is a
+ * support ticket. It is written out twice rather than built once and interpolated, because
+ * §1.5 admits no template literal in a query at all, safe or not: the rule is worth more
+ * as an absolute that needs no case-by-case reading than as one saving a duplicated line.
  *
  * Deductions are pro-rated on the same factor as earnings, not charged in full. PF is a
  * percentage of the basic actually paid, so it genuinely does scale with payable days;
- * and charging a flat deduction against a pro-rated gross produces a negative net pay
- * for anyone with a month of loss-of-pay, which is not a payslip anyone should be handed.
+ * and charging a flat deduction against a pro-rated gross produces a negative net pay for
+ * anyone with a month of loss-of-pay, which is not a payslip anyone should be handed.
  */
-const PRORATED_AMOUNT = `ROUND(sc.monthly_amount * $PAYABLE::numeric / NULLIF($WORKING, 0)::numeric, 2)`;
 
 /**
  * The version in force on a given day. validity is a half-open daterange, so a version
@@ -206,10 +212,10 @@ export async function insertPayslip(
   client,
   { employeeId, periodMonth, versionId, payableDays, lopDays, workingDays, generatedBy }
 ) {
-  const amount = PRORATED_AMOUNT.replaceAll('$PAYABLE', '$4').replaceAll('$WORKING', '$5');
   const { rows } = await client.query(
     `WITH comp AS (
-       SELECT sc.kind, ${amount} AS amount
+       SELECT sc.kind,
+              ROUND(sc.monthly_amount * $4::numeric / NULLIF($5, 0)::numeric, 2) AS amount
        FROM salary_components sc
        WHERE sc.salary_version_id = $3
      ), totals AS (
@@ -239,10 +245,10 @@ export async function insertPayslipLineItems(
   client,
   { payslipId, versionId, payableDays, workingDays }
 ) {
-  const amount = PRORATED_AMOUNT.replaceAll('$PAYABLE', '$3').replaceAll('$WORKING', '$4');
   const { rows } = await client.query(
     `INSERT INTO payslip_line_items (payslip_id, code, label, kind, amount)
-     SELECT $1, sc.code, sc.label, sc.kind, ${amount}
+     SELECT $1, sc.code, sc.label, sc.kind,
+            ROUND(sc.monthly_amount * $3::numeric / NULLIF($4, 0)::numeric, 2)
      FROM salary_components sc
      WHERE sc.salary_version_id = $2
      RETURNING code, kind, ROUND(amount, 2)::text AS amount`,

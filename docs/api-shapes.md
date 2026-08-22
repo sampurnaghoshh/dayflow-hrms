@@ -1,6 +1,7 @@
 # API response shapes
 
-Captured from the running server on 2026-08-22, not written by hand. Every block below is
+Captured from the running server on 2026-08-22 against the committed demo seed
+(`npm run db:reset && npm run migrate && npm run seed`), not written by hand. Every block below is
 the actual body returned by `node server/src/index.js` against a seeded database,
 pretty-printed for readability (the wire format is minified).
 
@@ -35,12 +36,12 @@ Content-Type: application/json
 ```json
 {
   "user": {
-    "id": "1",
-    "employeeCode": "ENG-101",
-    "email": "riya@example.com",
+    "id": "5",
+    "employeeCode": "DF-005",
+    "email": "priya.menon@dayflow.example",
     "role": "EMPLOYEE",
     "status": "ACTIVE",
-    "employeeId": "1"
+    "employeeId": "5"
   }
 }
 ```
@@ -52,23 +53,23 @@ Content-Type: application/json
 ```json
 {
   "user": {
-    "id": "1",
-    "employeeCode": "ENG-101",
-    "email": "riya@example.com",
+    "id": "5",
+    "employeeCode": "DF-005",
+    "email": "priya.menon@dayflow.example",
     "role": "EMPLOYEE",
     "status": "ACTIVE",
-    "emailVerifiedAt": "2026-08-22T06:29:55.019Z",
-    "lastLoginAt": "2026-08-22T06:34:59.172Z"
+    "emailVerifiedAt": "2025-02-10T04:00:00.000Z",
+    "lastLoginAt": "2026-08-22T07:18:28.063Z"
   },
   "employee": {
-    "id": "1",
-    "fullName": "Riya Sharma",
-    "designation": "Engineer",
-    "dateOfJoining": "2026-01-05",
-    "phone": "+91 98111 22222",
-    "address": "12 MG Road, Bengaluru",
-    "profilePhotoPath": "photos/01190d6eed7a231600170b28d8f9847b.jpg",
-    "managerId": null,
+    "id": "5",
+    "fullName": "Priya Menon",
+    "designation": "Senior Engineer",
+    "dateOfJoining": "2025-02-10",
+    "phone": "+91 986912726",
+    "address": "77 Residency Road, Bengaluru",
+    "profilePhotoPath": null,
+    "managerId": "4",
     "department": {
       "id": "1",
       "code": "ENG",
@@ -123,15 +124,15 @@ Content-Type: application/json
 
 ```json
 {
-  "employeeId": "1",
+  "employeeId": "5",
   "balances": [
     {
       "leave_type_id": "1",
       "leave_code": "PAID",
       "leave_name": "Paid Leave",
-      "balance": "18.00",
+      "balance": "12.00",
       "total_accrued": "0.00",
-      "total_consumed": "0.00"
+      "total_consumed": "6.00"
     },
     {
       "leave_type_id": "2",
@@ -167,27 +168,27 @@ Content-Type: application/json
 ```json
 {
   "request": {
-    "id": "1",
-    "employee_id": "1",
+    "id": "30",
+    "employee_id": "5",
     "leave_type_id": "1",
-    "start_date": "2026-09-07",
-    "end_date": "2026-09-09",
+    "start_date": "2026-11-16",
+    "end_date": "2026-11-18",
     "day_count": "3.00",
     "remarks": "Family function",
     "status": "PENDING",
     "current_step": 1,
-    "created_at": "2026-08-22T06:34:59.806Z",
+    "created_at": "2026-08-22T07:18:29.246Z",
     "decided_at": null
   },
   "approvalSteps": [
     {
-      "id": "1",
+      "id": "47",
       "step_no": 1,
       "approver_role": "HR",
       "status": "PENDING"
     },
     {
-      "id": "2",
+      "id": "48",
       "step_no": 2,
       "approver_role": "ADMIN",
       "status": "PENDING"
@@ -205,41 +206,89 @@ Content-Type: application/json
 {
   "data": [
     {
-      "id": "2",
-      "employee_id": "1",
-      "full_name": "Riya Sharma",
-      "leave_type_id": "2",
-      "leave_code": "SICK",
-      "leave_name": "Sick Leave",
-      "start_date": "2026-09-14",
-      "end_date": "2026-09-14",
-      "day_count": "1.00",
-      "remarks": "Doctor appointment",
-      "status": "PENDING",
-      "current_step": 1,
-      "created_at": "2026-08-22T06:35:00.140Z",
-      "decided_at": null
-    },
-    {
-      "id": "1",
-      "employee_id": "1",
-      "full_name": "Riya Sharma",
+      "id": "7",
+      "employee_id": "5",
+      "full_name": "Priya Menon",
       "leave_type_id": "1",
       "leave_code": "PAID",
       "leave_name": "Paid Leave",
-      "start_date": "2026-09-07",
-      "end_date": "2026-09-09",
+      "start_date": "2026-09-21",
+      "end_date": "2026-09-22",
+      "day_count": "2.00",
+      "remarks": "Not well",
+      "status": "PENDING",
+      "current_step": 1,
+      "created_at": "2026-09-09T06:15:00.000Z",
+      "decided_at": null
+    },
+    {
+      "id": "30",
+      "employee_id": "5",
+      "full_name": "Priya Menon",
+      "leave_type_id": "1",
+      "leave_code": "PAID",
+      "leave_name": "Paid Leave",
+      "start_date": "2026-11-16",
+      "end_date": "2026-11-18",
       "day_count": "3.00",
       "remarks": "Family function",
       "status": "PENDING",
       "current_step": 1,
-      "created_at": "2026-08-22T06:34:59.806Z",
+      "created_at": "2026-08-22T07:18:29.246Z",
       "decided_at": null
+    },
+    {
+      "id": "6",
+      "employee_id": "5",
+      "full_name": "Priya Menon",
+      "leave_type_id": "1",
+      "leave_code": "PAID",
+      "leave_name": "Paid Leave",
+      "start_date": "2026-06-15",
+      "end_date": "2026-06-17",
+      "day_count": "3.00",
+      "remarks": "Medical appointment",
+      "status": "APPROVED",
+      "current_step": 2,
+      "created_at": "2026-06-03T06:15:00.000Z",
+      "decided_at": "2026-06-11T05:10:00.000Z"
+    },
+    {
+      "id": "5",
+      "employee_id": "5",
+      "full_name": "Priya Menon",
+      "leave_type_id": "1",
+      "leave_code": "PAID",
+      "leave_name": "Paid Leave",
+      "start_date": "2026-04-06",
+      "end_date": "2026-04-08",
+      "day_count": "3.00",
+      "remarks": "Short-notice trip",
+      "status": "REJECTED",
+      "current_step": 2,
+      "created_at": "2026-03-25T06:15:00.000Z",
+      "decided_at": "2026-04-02T05:10:00.000Z"
+    },
+    {
+      "id": "1",
+      "employee_id": "5",
+      "full_name": "Priya Menon",
+      "leave_type_id": "1",
+      "leave_code": "PAID",
+      "leave_name": "Paid Leave",
+      "start_date": "2026-01-23",
+      "end_date": "2026-01-28",
+      "day_count": "3.00",
+      "remarks": "Republic Day long weekend - visiting family",
+      "status": "APPROVED",
+      "current_step": 2,
+      "created_at": "2026-01-09T06:15:00.000Z",
+      "decided_at": "2026-01-19T05:10:00.000Z"
     }
   ],
   "page": 1,
   "pageSize": 20,
-  "total": 2
+  "total": 5
 }
 ```
 
@@ -250,26 +299,26 @@ Content-Type: application/json
 ```json
 {
   "request": {
-    "id": "1",
-    "employee_id": "1",
-    "full_name": "Riya Sharma",
+    "id": "30",
+    "employee_id": "5",
+    "full_name": "Priya Menon",
     "department_id": "1",
     "leave_type_id": "1",
     "leave_code": "PAID",
     "leave_name": "Paid Leave",
     "is_paid": true,
-    "start_date": "2026-09-07",
-    "end_date": "2026-09-09",
+    "start_date": "2026-11-16",
+    "end_date": "2026-11-18",
     "day_count": "3.00",
     "remarks": "Family function",
     "status": "PENDING",
     "current_step": 1,
-    "created_at": "2026-08-22T06:34:59.806Z",
+    "created_at": "2026-08-22T07:18:29.246Z",
     "decided_at": null
   },
   "timeline": [
     {
-      "step_id": "1",
+      "step_id": "47",
       "step_no": 1,
       "approver_role": "HR",
       "status": "PENDING",
@@ -279,7 +328,7 @@ Content-Type: application/json
       "approver_name": null
     },
     {
-      "step_id": "2",
+      "step_id": "48",
       "step_no": 2,
       "approver_role": "ADMIN",
       "status": "PENDING",
@@ -300,39 +349,99 @@ Content-Type: application/json
 {
   "data": [
     {
-      "step_id": "1",
-      "request_id": "1",
+      "step_id": "37",
+      "request_id": "24",
       "step_no": 1,
       "approver_role": "HR",
-      "employee_id": "1",
-      "full_name": "Riya Sharma",
-      "department_id": "1",
+      "employee_id": "12",
+      "full_name": "Farhan Qureshi",
+      "department_id": "2",
       "leave_code": "PAID",
-      "start_date": "2026-09-07",
-      "end_date": "2026-09-09",
-      "day_count": "3.00",
-      "remarks": "Family function",
-      "created_at": "2026-08-22T06:34:59.806Z"
+      "start_date": "2026-09-01",
+      "end_date": "2026-09-02",
+      "day_count": "2.00",
+      "remarks": "Moving house",
+      "created_at": "2026-08-20T06:15:00.000Z"
     },
     {
-      "step_id": "3",
-      "request_id": "2",
+      "step_id": "47",
+      "request_id": "30",
       "step_no": 1,
       "approver_role": "HR",
-      "employee_id": "1",
-      "full_name": "Riya Sharma",
+      "employee_id": "5",
+      "full_name": "Priya Menon",
       "department_id": "1",
-      "leave_code": "SICK",
+      "leave_code": "PAID",
+      "start_date": "2026-11-16",
+      "end_date": "2026-11-18",
+      "day_count": "3.00",
+      "remarks": "Family function",
+      "created_at": "2026-08-22T07:18:29.246Z"
+    },
+    {
+      "step_id": "28",
+      "request_id": "18",
+      "step_no": 1,
+      "approver_role": "HR",
+      "employee_id": "9",
+      "full_name": "Kavita Reddy",
+      "department_id": "3",
+      "leave_code": "PAID",
+      "start_date": "2026-09-07",
+      "end_date": "2026-09-11",
+      "day_count": "5.00",
+      "remarks": "Wedding season",
+      "created_at": "2026-08-26T06:15:00.000Z"
+    },
+    {
+      "step_id": "7",
+      "request_id": "4",
+      "step_no": 1,
+      "approver_role": "HR",
+      "employee_id": "4",
+      "full_name": "Vikram Desai",
+      "department_id": "1",
+      "leave_code": "PAID",
       "start_date": "2026-09-14",
-      "end_date": "2026-09-14",
-      "day_count": "1.00",
-      "remarks": "Doctor appointment",
-      "created_at": "2026-08-22T06:35:00.140Z"
+      "end_date": "2026-09-16",
+      "day_count": "3.00",
+      "remarks": "Sabbatical planning",
+      "created_at": "2026-09-02T06:15:00.000Z"
+    },
+    {
+      "step_id": "13",
+      "request_id": "7",
+      "step_no": 1,
+      "approver_role": "HR",
+      "employee_id": "5",
+      "full_name": "Priya Menon",
+      "department_id": "1",
+      "leave_code": "PAID",
+      "start_date": "2026-09-21",
+      "end_date": "2026-09-22",
+      "day_count": "2.00",
+      "remarks": "Not well",
+      "created_at": "2026-09-09T06:15:00.000Z"
+    },
+    {
+      "step_id": "18",
+      "request_id": "10",
+      "step_no": 1,
+      "approver_role": "HR",
+      "employee_id": "6",
+      "full_name": "Rahul Iyer",
+      "department_id": "1",
+      "leave_code": "PAID",
+      "start_date": "2026-09-28",
+      "end_date": "2026-09-29",
+      "day_count": "2.00",
+      "remarks": "Moving house",
+      "created_at": "2026-09-16T06:15:00.000Z"
     }
   ],
   "page": 1,
   "pageSize": 20,
-  "total": 2
+  "total": 6
 }
 ```
 
@@ -350,23 +459,23 @@ Content-Type: application/json
 ```json
 {
   "step": {
-    "id": "1",
+    "id": "47",
     "step_no": 1,
     "status": "APPROVED",
     "approver_user_id": "3",
     "comment": "Approved, enjoy",
-    "acted_at": "2026-08-22T06:35:00.969Z"
+    "acted_at": "2026-08-22T07:18:30.090Z"
   },
-  "requestId": "1",
+  "requestId": "30",
   "ledgerEntry": null,
   "attendanceDays": 0,
   "skippedSteps": 0,
   "request": {
-    "id": "1",
+    "id": "30",
     "status": "PENDING",
     "current_step": 2
   },
-  "employeeUserId": "1",
+  "employeeUserId": "5",
   "leaveCode": "PAID"
 }
 ```
@@ -377,21 +486,21 @@ Content-Type: application/json
 
 ```json
 {
-  "employeeId": "1",
+  "employeeId": "5",
   "current": {
-    "id": "1",
-    "employee_id": "1",
-    "effective_from": "2026-01-05",
+    "id": "7",
+    "employee_id": "5",
+    "effective_from": "2026-04-01",
     "effective_to": null,
-    "ctc_annual": "1200000.00",
-    "created_at": "2026-08-22T06:32:52.366Z",
-    "created_by_name": "Meera Admin",
+    "ctc_annual": "1800000.00",
+    "created_at": "2026-04-01T03:30:00.000Z",
+    "created_by_name": "Meera Nair",
     "components": [
       {
         "code": "PF",
         "label": "Provident Fund",
         "kind": "DEDUCTION",
-        "monthlyAmount": "4800.00"
+        "monthlyAmount": "7200.00"
       },
       {
         "code": "PT",
@@ -403,37 +512,37 @@ Content-Type: application/json
         "code": "BASIC",
         "label": "Basic Salary",
         "kind": "EARNING",
-        "monthlyAmount": "40000.00"
+        "monthlyAmount": "60000.00"
       },
       {
         "code": "HRA",
         "label": "House Rent Allowance",
         "kind": "EARNING",
-        "monthlyAmount": "20000.00"
+        "monthlyAmount": "30000.00"
       },
       {
         "code": "SPECIAL",
         "label": "Special Allowance",
         "kind": "EARNING",
-        "monthlyAmount": "40000.00"
+        "monthlyAmount": "60000.00"
       }
     ]
   },
   "history": [
     {
-      "id": "1",
-      "employee_id": "1",
-      "effective_from": "2026-01-05",
+      "id": "7",
+      "employee_id": "5",
+      "effective_from": "2026-04-01",
       "effective_to": null,
-      "ctc_annual": "1200000.00",
-      "created_at": "2026-08-22T06:32:52.366Z",
-      "created_by_name": "Meera Admin",
+      "ctc_annual": "1800000.00",
+      "created_at": "2026-04-01T03:30:00.000Z",
+      "created_by_name": "Meera Nair",
       "components": [
         {
           "code": "PF",
           "label": "Provident Fund",
           "kind": "DEDUCTION",
-          "monthlyAmount": "4800.00"
+          "monthlyAmount": "7200.00"
         },
         {
           "code": "PT",
@@ -445,35 +554,100 @@ Content-Type: application/json
           "code": "BASIC",
           "label": "Basic Salary",
           "kind": "EARNING",
-          "monthlyAmount": "40000.00"
+          "monthlyAmount": "60000.00"
         },
         {
           "code": "HRA",
           "label": "House Rent Allowance",
           "kind": "EARNING",
-          "monthlyAmount": "20000.00"
+          "monthlyAmount": "30000.00"
         },
         {
           "code": "SPECIAL",
           "label": "Special Allowance",
           "kind": "EARNING",
-          "monthlyAmount": "40000.00"
+          "monthlyAmount": "60000.00"
+        }
+      ]
+    },
+    {
+      "id": "6",
+      "employee_id": "5",
+      "effective_from": "2025-02-10",
+      "effective_to": "2026-04-01",
+      "ctc_annual": "1600000.00",
+      "created_at": "2025-02-10T03:30:00.000Z",
+      "created_by_name": "Meera Nair",
+      "components": [
+        {
+          "code": "PF",
+          "label": "Provident Fund",
+          "kind": "DEDUCTION",
+          "monthlyAmount": "6399.99"
+        },
+        {
+          "code": "PT",
+          "label": "Professional Tax",
+          "kind": "DEDUCTION",
+          "monthlyAmount": "200.00"
+        },
+        {
+          "code": "BASIC",
+          "label": "Basic Salary",
+          "kind": "EARNING",
+          "monthlyAmount": "53333.33"
+        },
+        {
+          "code": "HRA",
+          "label": "House Rent Allowance",
+          "kind": "EARNING",
+          "monthlyAmount": "26666.66"
+        },
+        {
+          "code": "SPECIAL",
+          "label": "Special Allowance",
+          "kind": "EARNING",
+          "monthlyAmount": "53333.34"
         }
       ]
     }
   ],
   "payslips": [
     {
-      "id": "1",
-      "employee_id": "1",
+      "id": "29",
+      "employee_id": "5",
+      "period_month": "2026-08-01",
+      "salary_version_id": "7",
+      "payable_days": "21.00",
+      "lop_days": "0.00",
+      "gross_earnings": "150000.00",
+      "total_deductions": "7400.00",
+      "net_pay": "142600.00",
+      "generated_at": "2026-08-22T07:17:05.053Z"
+    },
+    {
+      "id": "17",
+      "employee_id": "5",
       "period_month": "2026-07-01",
-      "salary_version_id": "1",
-      "payable_days": "20.00",
-      "lop_days": "3.00",
-      "gross_earnings": "86956.52",
-      "total_deductions": "4347.82",
-      "net_pay": "82608.70",
-      "generated_at": "2026-08-22T06:32:53.478Z"
+      "salary_version_id": "7",
+      "payable_days": "21.00",
+      "lop_days": "2.00",
+      "gross_earnings": "136956.52",
+      "total_deductions": "6756.52",
+      "net_pay": "130200.00",
+      "generated_at": "2026-07-01T12:30:00.000Z"
+    },
+    {
+      "id": "5",
+      "employee_id": "5",
+      "period_month": "2026-06-01",
+      "salary_version_id": "7",
+      "payable_days": "22.00",
+      "lop_days": "0.00",
+      "gross_earnings": "150000.00",
+      "total_deductions": "7400.00",
+      "net_pay": "142600.00",
+      "generated_at": "2026-06-01T12:30:00.000Z"
     }
   ]
 }
@@ -485,52 +659,52 @@ Content-Type: application/json
 
 ```json
 {
-  "employeeId": "1",
+  "employeeId": "5",
   "from": "2026-08-01",
   "to": "2026-08-22",
   "days": [
     {
-      "employee_id": "1",
+      "employee_id": "5",
       "work_date": "2026-08-01",
       "status": "WEEKEND",
       "worked_minutes": 0,
       "first_in": null,
       "last_out": null,
       "leave_request_id": null,
-      "computed_at": "2026-08-22T06:32:53.046Z",
+      "computed_at": "2026-08-22T07:17:03.798Z",
       "leave_code": null
     },
     {
-      "employee_id": "1",
+      "employee_id": "5",
       "work_date": "2026-08-02",
       "status": "WEEKEND",
       "worked_minutes": 0,
       "first_in": null,
       "last_out": null,
       "leave_request_id": null,
-      "computed_at": "2026-08-22T06:32:53.046Z",
+      "computed_at": "2026-08-22T07:17:03.798Z",
       "leave_code": null
     },
     {
-      "employee_id": "1",
+      "employee_id": "5",
       "work_date": "2026-08-03",
       "status": "PRESENT",
-      "worked_minutes": 540,
-      "first_in": "2026-08-03T04:00:00.000Z",
-      "last_out": "2026-08-03T13:00:00.000Z",
+      "worked_minutes": 504,
+      "first_in": "2026-08-03T04:14:00.000Z",
+      "last_out": "2026-08-03T12:38:00.000Z",
       "leave_request_id": null,
-      "computed_at": "2026-08-22T06:32:53.046Z",
+      "computed_at": "2026-08-22T07:17:03.798Z",
       "leave_code": null
     },
     {
-      "employee_id": "1",
+      "employee_id": "5",
       "work_date": "2026-08-04",
       "status": "PRESENT",
-      "worked_minutes": 540,
-      "first_in": "2026-08-04T04:00:00.000Z",
-      "last_out": "2026-08-04T13:00:00.000Z",
+      "worked_minutes": 511,
+      "first_in": "2026-08-04T04:07:00.000Z",
+      "last_out": "2026-08-04T12:38:00.000Z",
       "leave_request_id": null,
-      "computed_at": "2026-08-22T06:32:53.046Z",
+      "computed_at": "2026-08-22T07:17:03.798Z",
       "leave_code": null
     },
     {
@@ -549,7 +723,7 @@ Content-Type: application/json
     },
     {
       "week_start": "2026-08-03",
-      "worked_minutes": 2700,
+      "worked_minutes": 2581,
       "present_days": 5,
       "half_days": 0,
       "absent_days": 0,
@@ -558,7 +732,7 @@ Content-Type: application/json
     },
     {
       "week_start": "2026-08-10",
-      "worked_minutes": 2700,
+      "worked_minutes": 2560,
       "present_days": 5,
       "half_days": 0,
       "absent_days": 0,
@@ -567,7 +741,7 @@ Content-Type: application/json
     },
     {
       "week_start": "2026-08-17",
-      "worked_minutes": 2700,
+      "worked_minutes": 2616,
       "present_days": 5,
       "half_days": 0,
       "absent_days": 0,
@@ -588,11 +762,11 @@ Returned when a second approver acts on a step someone already decided. The mess
 {
   "error": {
     "code": "STEP_ALREADY_DECIDED",
-    "message": "Nita HR already approved this step.",
+    "message": "Nita Sharma already approved this step.",
     "details": [
       {
         "field": "stepId",
-        "issue": "Nita HR approved it at 2026-08-22T06:35:00.969Z"
+        "issue": "Nita Sharma approved it at 2026-08-22T07:18:30.090Z"
       }
     ]
   }
@@ -607,11 +781,11 @@ Raised before the request is written. `details[].field` points at the input to c
 {
   "error": {
     "code": "INSUFFICIENT_BALANCE",
-    "message": "You have 18.00 paid leave days available but requested 54.",
+    "message": "You have 1.50 paid leave days available but requested 3.",
     "details": [
       {
         "field": "endDate",
-        "issue": "Reduce the range by 36.00 days"
+        "issue": "Reduce the range by 1.50 days"
       }
     ]
   }
@@ -629,8 +803,8 @@ Sent immediately on connect, so the client can tell "open" from "still connectin
 
 ```json
 {
-  "userId": "4",
-  "at": "2026-08-22T06:35:37.744Z"
+  "userId": "1",
+  "at": "2026-08-22T07:18:56.256Z"
 }
 ```
 
@@ -640,9 +814,9 @@ Broadcast to every connected client after a punch commits.
 
 ```json
 {
-  "employeeId": "1",
+  "employeeId": "5",
   "direction": "IN",
-  "punchAt": "2026-08-22T06:35:39.373Z",
+  "punchAt": "2026-08-22T07:18:57.874Z",
   "workDate": "2026-08-22",
   "status": "WEEKEND",
   "workedMinutes": 0
@@ -655,11 +829,11 @@ Broadcast when a leave request is created. `approverRole` is the role that acts 
 
 ```json
 {
-  "requestId": "3",
-  "employeeId": "1",
+  "requestId": "31",
+  "employeeId": "5",
   "leaveCode": "UNPAID",
-  "startDate": "2026-09-21",
-  "endDate": "2026-09-22",
+  "startDate": "2026-12-07",
+  "endDate": "2026-12-08",
   "dayCount": "2.00",
   "approverRole": "HR"
 }
@@ -671,10 +845,10 @@ Broadcast when a leave request is created. `approverRole` is the role that acts 
 
 ```json
 {
-  "requestId": "1",
+  "requestId": "30",
   "stepNo": 2,
   "action": "APPROVE",
-  "decidedBy": "4",
+  "decidedBy": "1",
   "requestStatus": "APPROVED",
   "currentStep": null,
   "leaveCode": "PAID",

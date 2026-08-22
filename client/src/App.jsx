@@ -6,6 +6,9 @@ import { AdminEmployeeProvider } from './context/AdminEmployeeContext.jsx';
 import EmployeeLayout from './layouts/EmployeeLayout.jsx';
 import AdminLayout from './layouts/AdminLayout.jsx';
 import ComponentKit from './pages/dev/ComponentKit.jsx';
+import SignIn from './pages/auth/SignIn.jsx';
+import SignUp from './pages/auth/SignUp.jsx';
+import VerifyEmail from './pages/auth/VerifyEmail.jsx';
 
 // Stand-in for every page not built yet — Steps 3 and 4 replace these one route at a time.
 function Placeholder({ title }) {
@@ -33,9 +36,9 @@ export default function App() {
           {/* TEMPORARY — remove once every component in the kit has been used for real. */}
           <Route path="/kit" element={<ComponentKit />} />
 
-          <Route path="/sign-in" element={<Placeholder title="Sign in" />} />
-          <Route path="/sign-up" element={<Placeholder title="Sign up" />} />
-          <Route path="/verify-email" element={<Placeholder title="Verify email" />} />
+          <Route path="/sign-in" element={<SignIn />} />
+          <Route path="/sign-up" element={<SignUp />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
 
           <Route element={<ProtectedRoute />}>
             <Route element={<RoleRoute roles={['EMPLOYEE', 'HR', 'ADMIN']} />}>

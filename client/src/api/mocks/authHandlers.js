@@ -30,8 +30,10 @@ export const authHandlers = [
       };
       store.employees.push(employee);
       store.mockCredentials.push({ email, password, userId });
-      issueVerifyToken(userId);
-      return { id: employee.id, employeeCode, email, status: employee.status };
+      const token = issueVerifyToken(userId);
+      // Anti-goal: no real email sending. The mock hands back the link directly so the UI
+      // can show it; the real backend will need an equivalent stand-in until SMTP exists.
+      return { id: employee.id, employeeCode, email, status: employee.status, verificationUrl: `/verify-email?token=${token}` };
     },
   },
   {

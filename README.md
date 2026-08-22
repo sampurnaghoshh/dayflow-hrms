@@ -95,7 +95,7 @@ All are `ACTIVE` with `email_verified_at` set, so no verification step is needed
 | `priya.menon@dayflow.example` | EMPLOYEE | The Republic Day leave; payslips; ledger tape |
 | `imran.sheikh@dayflow.example` | EMPLOYEE | **Insufficient balance** — 1.50 paid days left |
 
-Eight more employees exist across Engineering, Finance, Sales and People Operations —
+Eight more employees exist across Engineering, Finance, Design and People Operations —
 twelve in total, each with a department, ~8 months of attendance, and a salary structure.
 
 Two ADMIN accounts is not decoration. A single person may not sign off two steps of the

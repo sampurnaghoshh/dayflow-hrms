@@ -12,7 +12,7 @@ BEGIN;
 -- ---------------------------------------------------------------------------
 INSERT INTO departments (code, name) VALUES
   ('ENG', 'Engineering'),
-  ('SLS', 'Sales'),
+  ('DES', 'Design'),
   ('FIN', 'Finance'),
   ('PPL', 'People Operations')
 ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name;

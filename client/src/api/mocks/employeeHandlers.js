@@ -66,7 +66,9 @@ export const employeeHandlers = [
       const actor = requireActor();
       requireSelfOrRole(actor, id, ['ADMIN']);
       const employee = findEmployeeOr404(id);
-      const isAdmin = actor.role === 'ADMIN' && actor.id !== employee.id;
+      // Role-gated, not self-vs-other: CLAUDE.md §6 reads "self (limited) / ADMIN (all)" — an
+      // ADMIN editing their own profile still gets every field, matching what /profile shows.
+      const isAdmin = actor.role === 'ADMIN';
       const fields = Object.keys(body ?? {});
       if (!isAdmin) {
         const disallowed = fields.filter((f) => !SELF_EDITABLE_FIELDS.includes(f));

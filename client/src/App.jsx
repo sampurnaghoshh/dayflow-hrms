@@ -14,6 +14,7 @@ import EmployeeDashboard from './pages/employee/Dashboard.jsx';
 import LeaveApply from './pages/employee/LeaveApply.jsx';
 import LeaveHistory from './pages/employee/LeaveHistory.jsx';
 import Payslips from './pages/employee/Payslips.jsx';
+import Profile from './pages/employee/Profile.jsx';
 import AdminDashboard from './pages/admin/Dashboard.jsx';
 import ApprovalQueue from './pages/admin/ApprovalQueue.jsx';
 import Employees from './pages/admin/Employees.jsx';
@@ -56,7 +57,7 @@ export default function App() {
               <Route element={<RoleRoute roles={['EMPLOYEE', 'HR', 'ADMIN']} />}>
                 <Route element={<EmployeeLayout />}>
                   <Route path="/" element={<EmployeeDashboard />} />
-                  <Route path="/profile" element={<Placeholder title="Profile" />} />
+                  <Route path="/profile" element={<Profile />} />
                   <Route path="/attendance" element={<Placeholder title="Attendance" />} />
                   <Route path="/leave/apply" element={<LeaveApply />} />
                   <Route path="/leave/history" element={<LeaveHistory />} />

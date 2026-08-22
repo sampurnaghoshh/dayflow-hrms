@@ -56,18 +56,24 @@ export default function AdminDashboard() {
     );
   }
 
-  const { stats, attendanceByDepartment, leaveStatusBreakdown } = data;
-  const hasLeaveData = leaveStatusBreakdown.some((s) => s.count > 0);
+  // Every key defaulted — an endpoint that's missing or renamed a field should render an
+  // empty state, never crash the screen (and, since this shares a route tree with Approvals/
+  // Employees/Attendance, never crash those either — see the ErrorBoundary in App.jsx as the
+  // last line of defence if a guard here is ever missed).
+  const counts = data.counts ?? {};
+  const leaveByStatus = data.leaveByStatus ?? [];
+  const attendanceByDepartment = data.attendanceByDepartment ?? [];
+  const hasLeaveData = leaveByStatus.some((s) => s.count > 0);
 
   return (
     <div className="flex flex-col gap-8 p-6">
       <h1 className="text-2xl font-semibold text-text">Dashboard</h1>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total employees" value={stats.totalEmployees} />
-        <StatCard label="Pending approvals" value={stats.pendingApprovals} />
-        <StatCard label="Present today" value={stats.presentToday} />
-        <StatCard label="On leave today" value={stats.onLeaveToday} />
+        <StatCard label="Total employees" value={counts.totalEmployees ?? 0} />
+        <StatCard label="Pending approvals" value={counts.pendingApprovals ?? 0} />
+        <StatCard label="Present today" value={counts.presentToday ?? 0} />
+        <StatCard label="On leave today" value={counts.onLeaveToday ?? 0} />
       </section>
 
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -109,11 +115,11 @@ export default function AdminDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={leaveStatusBreakdown} dataKey="count" nameKey="status"
+                    data={leaveByStatus} dataKey="count" nameKey="status"
                     cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2}
                     label={({ count }) => (count > 0 ? count : '')}
                   >
-                    {leaveStatusBreakdown.map((entry) => (
+                    {leaveByStatus.map((entry) => (
                       <Cell key={entry.status} fill={STATUS_COLORS[entry.status]} stroke="var(--surface-card)" strokeWidth={2} />
                     ))}
                   </Pie>

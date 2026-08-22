@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ToastProvider } from './components/Toast.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { AuthProvider } from './auth/AuthContext.jsx';
 import ProtectedRoute from './auth/ProtectedRoute.jsx';
 import RoleRoute from './auth/RoleRoute.jsx';
@@ -34,10 +35,17 @@ function Placeholder({ title }) {
 }
 
 function AdminLayoutWithContext() {
+  // Wraps the layout AND (via its <Outlet/>) every nested admin route — a crash on any one
+  // of them (Dashboard, Approvals, Employees, Attendance, Payroll) is contained here instead
+  // of taking down the whole app, which is what "one screen crashing takes out the others"
+  // meant before this existed: an uncaught render error unmounts everything up to the
+  // nearest boundary, and there wasn't one, so it unmounted the entire React tree.
   return (
-    <AdminEmployeeProvider>
-      <AdminLayout />
-    </AdminEmployeeProvider>
+    <ErrorBoundary homeTo="/">
+      <AdminEmployeeProvider>
+        <AdminLayout />
+      </AdminEmployeeProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -13,6 +13,7 @@ import { router as leaveRouter } from './modules/leave/leave.routes.js';
 import { router as approvalsRouter } from './modules/approvals/approvals.routes.js';
 import { router as attendanceRouter } from './modules/attendance/attendance.routes.js';
 import { router as payrollRouter } from './modules/payroll/payroll.routes.js';
+import { router as employeesRouter, documentsRouter } from './modules/employees/employees.routes.js';
 import { closeAllStreams, streamHandler } from './realtime/sse.js';
 import { requireAuth } from './middleware/auth.js';
 
@@ -64,6 +65,8 @@ app.use('/api/leave', leaveRouter);
 app.use('/api/approvals', approvalsRouter);
 app.use('/api/attendance', attendanceRouter);
 app.use('/api/payroll', payrollRouter);
+app.use('/api/employees', employeesRouter);
+app.use('/api/documents', documentsRouter);
 
 // SSE. requireAuth runs first so an anonymous connection never holds a socket open.
 app.get('/api/stream', requireAuth, streamHandler);

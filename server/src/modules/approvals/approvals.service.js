@@ -8,6 +8,7 @@
 import { pool, withTransaction } from '../../db/pool.js';
 import { conflict, forbidden, notFound, unprocessable } from '../../lib/errors.js';
 import { eachDateInRange, isWeekend } from '../../lib/dates.js';
+import { broadcast } from '../../realtime/sse.js';
 import * as q from './approvals.queries.js';
 import * as leaveQ from '../leave/leave.queries.js';
 
@@ -82,7 +83,7 @@ function describeDecision(prior) {
  * @param {{action: 'APPROVE'|'REJECT', comment?: string}} decision
  */
 export async function decideStep(actor, stepId, { action, comment }) {
-  return withTransaction(async (client) => {
+  const outcome = await withTransaction(async (client) => {
     // --- §5.2's lock. Everything after this is serialised per request. ----------
     const ctx = await q.lockRequestByStepId(client, { stepId });
     if (!ctx) {
@@ -291,12 +292,23 @@ export async function decideStep(actor, stepId, { action, comment }) {
       });
     }
 
+    result.employeeUserId = ctx.employee_user_id;
+    result.leaveCode = ctx.leave_code;
     return result;
   });
 
-  /*
-   * The SSE broadcast of 'approval:decided' belongs at this call site, after COMMIT -
-   * never inside the transaction, where a rollback would leave subscribers believing in
-   * a decision that never happened. realtime/sse.js arrives in STEP 4.
-   */
+  // After COMMIT, never inside the transaction: a rollback would otherwise leave
+  // subscribers believing in a decision that never happened.
+  broadcast('approval:decided', {
+    requestId: String(outcome.requestId),
+    stepNo: outcome.step.step_no,
+    action,
+    decidedBy: String(actor.id),
+    requestStatus: outcome.request?.status ?? null,
+    currentStep: outcome.request?.current_step ?? null,
+    leaveCode: outcome.leaveCode,
+    consumed: outcome.ledgerEntry?.delta ?? null,
+  });
+
+  return outcome;
 }

@@ -9,6 +9,7 @@ import {
   isSameCalendarYear,
   todayString,
 } from '../../lib/dates.js';
+import { broadcast } from '../../realtime/sse.js';
 import * as q from './leave.queries.js';
 
 const PRIVILEGED_ROLES = new Set(['HR', 'ADMIN']);
@@ -174,12 +175,17 @@ export async function createLeaveRequest(actor, { leaveTypeId, startDate, endDat
     return { request, steps, dayCount, leaveType };
   });
 
-  /*
-   * The SSE broadcast of 'approval:new' belongs here, immediately after COMMIT and
-   * never inside the transaction - a subscriber told about a request that then rolled
-   * back would be looking at something that never existed. realtime/sse.js arrives in
-   * STEP 4; this is the call site.
-   */
+  // After COMMIT, never inside the transaction: a subscriber told about a request that
+  // then rolled back would be looking at something that never existed.
+  broadcast('approval:new', {
+    requestId: String(created.request.id),
+    employeeId: String(actor.employeeId),
+    leaveCode: created.leaveType.code,
+    startDate: created.request.start_date,
+    endDate: created.request.end_date,
+    dayCount: created.request.day_count,
+    approverRole: created.steps[0]?.approver_role ?? null,
+  });
 
   return created;
 }

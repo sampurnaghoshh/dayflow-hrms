@@ -11,6 +11,9 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { router as authRouter } from './modules/auth/auth.routes.js';
 import { router as leaveRouter } from './modules/leave/leave.routes.js';
 import { router as approvalsRouter } from './modules/approvals/approvals.routes.js';
+import { router as attendanceRouter } from './modules/attendance/attendance.routes.js';
+import { closeAllStreams, streamHandler } from './realtime/sse.js';
+import { requireAuth } from './middleware/auth.js';
 
 const app = express();
 
@@ -58,6 +61,10 @@ app.get('/api/health', async (req, res, next) => {
 app.use('/api/auth', authRouter);
 app.use('/api/leave', leaveRouter);
 app.use('/api/approvals', approvalsRouter);
+app.use('/api/attendance', attendanceRouter);
+
+// SSE. requireAuth runs first so an anonymous connection never holds a socket open.
+app.get('/api/stream', requireAuth, streamHandler);
 
 // Order is load-bearing: unmatched paths become a 404 AppError, and every error -
 // thrown, forwarded, or raised by postgres - leaves through the one handler.
@@ -73,6 +80,7 @@ const server = app.listen(env.PORT, () => {
 for (const signal of ['SIGINT', 'SIGTERM']) {
   process.on(signal, () => {
     console.log(`\n[dayflow] ${signal} received, shutting down`);
+    closeAllStreams(); // open SSE sockets would keep the server from closing
     server.close(async () => {
       await closePool();
       process.exit(0);

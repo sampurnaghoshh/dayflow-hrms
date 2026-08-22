@@ -22,7 +22,12 @@ const unique = () => `${Date.now().toString(36)}${(counter += 1)}${randomBytes(2
  * @param {Record<string,string>} [opts.opening]  leave type code -> opening delta
  * @returns {Promise<{userId: string, employeeId: string, role: string, fullName: string, actor: object}>}
  */
-export async function createEmployee({ role = 'EMPLOYEE', opening = {}, fullName } = {}) {
+export async function createEmployee({
+  role = 'EMPLOYEE',
+  opening = {},
+  fullName,
+  dateOfJoining = null,
+} = {}) {
   const suffix = unique();
   const name = fullName ?? `Test ${suffix}`;
 
@@ -36,8 +41,8 @@ export async function createEmployee({ role = 'EMPLOYEE', opening = {}, fullName
 
   const { rows: empRows } = await pool.query(
     `INSERT INTO employees (user_id, full_name, date_of_joining)
-     VALUES ($1, $2, CURRENT_DATE) RETURNING id`,
-    [userId, name]
+     VALUES ($1, $2, COALESCE($3::date, CURRENT_DATE)) RETURNING id`,
+    [userId, name, dateOfJoining]
   );
   const employeeId = empRows[0].id;
 
@@ -140,6 +145,44 @@ export function addDays(dateString, n) {
   const d = new Date(`${dateString}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() + n);
   return d.toISOString().slice(0, 10);
+}
+
+/**
+ * The most recent Monday that is not a seeded public holiday, so an attendance test can
+ * assert a status without a holiday quietly outranking it (§5.3 precedence).
+ */
+export async function recentWorkingMonday() {
+  const d = new Date();
+  d.setUTCHours(0, 0, 0, 0);
+  d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); // back to Monday
+
+  for (let guard = 0; guard < 30; guard += 1) {
+    const date = d.toISOString().slice(0, 10);
+    const { rows } = await pool.query('SELECT 1 FROM holidays WHERE holiday_date = $1', [date]);
+    if (rows.length === 0) return date;
+    d.setUTCDate(d.getUTCDate() - 7);
+  }
+  throw new Error('could not find a Monday that is not a holiday');
+}
+
+/** Inserts a punch at an explicit instant. Only a test may do this - the API is server-time only. */
+export async function seedPunch(employeeId, workDate, hhmm, direction, timezone = 'Asia/Kolkata') {
+  const { rows } = await pool.query(
+    `INSERT INTO attendance_punches (employee_id, punch_at, direction, source)
+     VALUES ($1, ($2::text || ' ' || $3::text)::timestamp AT TIME ZONE $5, $4::punch_direction, 'TEST')
+     RETURNING id, punch_at, direction`,
+    [employeeId, workDate, hhmm, direction, timezone]
+  );
+  return rows[0];
+}
+
+export async function attendanceDay(employeeId, workDate) {
+  const { rows } = await pool.query(
+    `SELECT work_date, status, worked_minutes, first_in, last_out, leave_request_id
+     FROM attendance_days WHERE employee_id = $1 AND work_date = $2::date`,
+    [employeeId, workDate]
+  );
+  return rows[0] ?? null;
 }
 
 export const closeDb = () => pool.end();
